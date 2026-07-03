@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
+use App\Controllers\AcademicPeriodController;
 use App\Controllers\CourseController;
 use App\Controllers\CourseSubjectController;
 use App\Controllers\CourseViewController;
@@ -27,6 +28,9 @@ $router->get('/dashboard/secundaria', [DashboardController::class, 'secundaria']
 $router->get('/docente/dashboard', [TeacherDashboardController::class, 'index']);
 $router->get('/docente/notas', [GradeController::class, 'index']);
 $router->post('/docente/notas/store', [GradeController::class, 'store']);
+$router->get('/trimestres', [AcademicPeriodController::class, 'index']);
+$router->post('/trimestres/update', [AcademicPeriodController::class, 'update']);
+$router->post('/trimestres/activate', [AcademicPeriodController::class, 'activate']);
 $router->get('/cursos', [CourseController::class, 'index']);
 $router->get('/cursos/create', [CourseController::class, 'create']);
 $router->post('/cursos/store', [CourseController::class, 'store']);

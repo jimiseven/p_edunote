@@ -9,22 +9,31 @@ use PDO;
 
 class Grade
 {
-    public static function assignmentInfo(int $idAsignacion): ?array
+    public static function assignmentInfo(int $idAsignacion, ?int $idUsuario = null): ?array
     {
         $sql = "SELECT da.id_asignacion, da.id_gestion, da.id_curso_materia, da.estado_carga,
+                       da.id_personal,
                        cm.id_curso, cm.id_materia,
                        c.nivel, c.grado, c.paralelo, c.turno,
                        m.nombre AS materia, m.abreviatura,
                        g.nombre AS gestion_nombre, g.anio
                 FROM docente_asignaciones da
+                INNER JOIN personal p ON p.id_personal = da.id_personal
                 INNER JOIN curso_materia cm ON cm.id_curso_materia = da.id_curso_materia
                 INNER JOIN cursos c ON c.id_curso = cm.id_curso
                 INNER JOIN materias m ON m.id_materia = cm.id_materia
                 INNER JOIN gestiones g ON g.id_gestion = da.id_gestion
                 WHERE da.id_asignacion = ? AND da.estado = 'activo'";
 
+        $params = [$idAsignacion];
+
+        if ($idUsuario !== null) {
+            $sql .= ' AND EXISTS (SELECT 1 FROM usuarios u WHERE u.id_usuario = ? AND u.id_personal = p.id_personal)';
+            $params[] = $idUsuario;
+        }
+
         $stmt = Database::connection()->prepare($sql);
-        $stmt->execute([$idAsignacion]);
+        $stmt->execute($params);
         $info = $stmt->fetch();
 
         return $info ?: null;
@@ -40,6 +49,16 @@ class Grade
         );
         $stmt->execute([$idGestion]);
         return $stmt->fetchAll();
+    }
+
+    public static function activeTrimestreIds(int $idGestion): array
+    {
+        $stmt = Database::connection()->prepare(
+            "SELECT id_trimestre FROM trimestres WHERE id_gestion = ? AND esta_activo = 1"
+        );
+        $stmt->execute([$idGestion]);
+
+        return array_map('intval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
     }
 
     public static function enrolledStudents(int $idCurso, int $idGestion): array
@@ -86,6 +105,11 @@ class Grade
         $conn->beginTransaction();
 
         try {
+            $activeTrimestres = self::activeTrimestreIds($idGestion);
+            if (empty($activeTrimestres)) {
+                throw new \RuntimeException('No hay trimestres activos para carga de notas.');
+            }
+
             $upsertNota = $conn->prepare(
                 "INSERT INTO calificaciones (id_matricula, id_materia, id_trimestre, id_asignacion, nota, estado)
                  VALUES (?, ?, ?, ?, ?, 'borrador')
@@ -110,6 +134,11 @@ class Grade
 
             foreach ($gradesData as $idMatricula => $trimestres) {
                 foreach ($trimestres as $idTrimestre => $valor) {
+                    $idTrimestre = (int) $idTrimestre;
+                    if (!in_array($idTrimestre, $activeTrimestres, true)) {
+                        throw new \RuntimeException('No se puede guardar en un trimestre inactivo.');
+                    }
+
                     $valor = trim((string) $valor);
 
                     if ($esInicial) {
@@ -117,19 +146,27 @@ class Grade
                             $deleteStmt->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre]);
                             continue;
                         }
-                        $upsertComentario->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre, $idAsignacion, $valor]);
+                        $upsertComentario->execute([(int) $idMatricula, $idMateria, $idTrimestre, $idAsignacion, $valor]);
                     } else {
                         if ($valor === '') {
-                            $deleteStmt->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre]);
+                            $deleteStmt->execute([(int) $idMatricula, $idMateria, $idTrimestre]);
                             continue;
                         }
 
-                        $notaValor = floatval(str_replace(',', '.', $valor));
+                        $normalized = str_replace(',', '.', $valor);
+                        if (!is_numeric($normalized)) {
+                            throw new \RuntimeException('Nota invalida: ' . $valor);
+                        }
+
+                        $notaValor = (float) $normalized;
+                        if ($notaValor < 0 || $notaValor > 100) {
+                            throw new \RuntimeException('La nota debe estar entre 0 y 100.');
+                        }
 
                         if ($notaValor === 0.0) {
-                            $upsertNotaZero->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre, $idAsignacion]);
+                            $upsertNotaZero->execute([(int) $idMatricula, $idMateria, $idTrimestre, $idAsignacion]);
                         } else {
-                            $upsertNota->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre, $idAsignacion, $notaValor]);
+                            $upsertNota->execute([(int) $idMatricula, $idMateria, $idTrimestre, $idAsignacion, $notaValor]);
                         }
                     }
                 }

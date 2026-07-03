@@ -95,6 +95,7 @@ class SidebarHelper
                     ['url' => '/materias', 'label' => 'Materias', 'icon' => 'calendar'],
                     ['url' => '/cursos-materias', 'label' => 'Materias por Curso', 'icon' => 'layers'],
                     ['url' => '/docentes-asignaciones', 'label' => 'Asignar Docentes', 'icon' => 'users'],
+                    ['url' => '/trimestres', 'label' => 'Trimestres', 'icon' => 'calendar'],
                 ],
             ],
             'admin' => [

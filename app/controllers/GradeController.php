@@ -19,7 +19,7 @@ class GradeController extends Controller
             $this->redirect('/docente/dashboard');
         }
 
-        $assignment = Grade::assignmentInfo($idAsignacion);
+        $assignment = Grade::assignmentInfo($idAsignacion, (int) $_SESSION['user_id']);
         if (!$assignment) {
             flash('error', 'Asignacion no encontrada.');
             $this->redirect('/docente/dashboard');
@@ -52,7 +52,7 @@ class GradeController extends Controller
         verify_csrf();
 
         $idAsignacion = (int) ($_POST['id_asignacion'] ?? 0);
-        $assignment = Grade::assignmentInfo($idAsignacion);
+        $assignment = Grade::assignmentInfo($idAsignacion, (int) $_SESSION['user_id']);
 
         if (!$assignment) {
             flash('error', 'Asignacion no encontrada.');
@@ -68,6 +68,11 @@ class GradeController extends Controller
 
             if (isset($_POST['guardar_excel'])) {
                 $idTrimestreExcel = (int) ($_POST['bimestre_excel'] ?? 0);
+                $activeTrimestres = Grade::activeTrimestreIds($idGestion);
+                if (!in_array($idTrimestreExcel, $activeTrimestres, true)) {
+                    throw new \RuntimeException('El trimestre seleccionado no esta habilitado para carga de notas.');
+                }
+
                 $datosExcel = explode("\n", trim($_POST['datos_excel'] ?? ''));
                 $students = Grade::enrolledStudents((int) $assignment['id_curso'], $idGestion);
 
