@@ -35,6 +35,15 @@
 
         <!-- Footer -->
         <div class="sidebar-bottom">
+            <!-- Theme Toggle -->
+            <div class="theme-toggle" id="themeToggle" title="Cambiar tema">
+                <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+                <div class="theme-toggle-track" id="themeTrack">
+                    <div class="theme-toggle-thumb"></div>
+                </div>
+                <span style="flex:1;">Modo Oscuro</span>
+            </div>
+
             <?php if ($user_name): ?>
                 <div class="sidebar-user">
                     <span class="feather"><?= \App\Helpers\SidebarHelper::icon('user') ?></span>

@@ -44,6 +44,44 @@
 
     <script src="<?= e(base_url('/assets/js/bootstrap.bundle.min.js')) ?>"></script>
     <script>
+    // --- Theme System ---
+    (function() {
+        var key = 'edunote-theme';
+        var stored = localStorage.getItem(key);
+
+        // Apply stored theme or system preference
+        if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        }
+
+        function syncToggleUI() {
+            var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            var track = document.getElementById('themeTrack');
+            var icon = document.getElementById('themeIcon');
+            if (track) track.classList.toggle('active', isDark);
+            if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            syncToggleUI();
+
+            var toggle = document.getElementById('themeToggle');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var html = document.documentElement;
+                    var isDark = html.getAttribute('data-bs-theme') === 'dark';
+                    var next = isDark ? 'light' : 'dark';
+                    html.setAttribute('data-bs-theme', next);
+                    localStorage.setItem(key, next);
+                    syncToggleUI();
+                });
+            }
+        });
+    })();
+
+    // Sidebar accordion
     document.addEventListener('DOMContentLoaded', function() {
         var titles = document.querySelectorAll('#sidebarMenu .sidebar-section-title[data-accordion="toggle"]');
         titles.forEach(function(title) {

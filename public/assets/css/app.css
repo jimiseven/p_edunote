@@ -1,8 +1,61 @@
-body {
-    background: #f4f8fa;
-    color: #1f2937;
+/* ============================================
+   EDUNOTE - Theme System (Light / Dark)
+   ============================================ */
+
+/* --- Light Theme (default) --- */
+:root {
+    --side-bg: #181f2c;
+    --side-text: #cfd6ee;
+    --side-heading: #77cfff;
+    --side-accent: #49f0bd;
+    --side-hover: #242f49;
+    --side-divider: #2a3547;
+    --side-brand-border: #202f47;
+
+    --main-bg: #ffffff;
+    --main-text: #1f2937;
+    --main-title: #11305e;
+
+    --table-header-bg: #181f2c;
+    --table-subheader-bg: #f1f3f5;
+    --table-cell-bg: #ffffff;
+    --table-hover: #f0f4ff;
+    --table-shadow: rgba(0,0,0,0.08);
 }
 
+/* --- Dark Theme --- */
+[data-bs-theme="dark"] {
+    --main-bg: #111318;
+    --main-text: #e2e8f0;
+    --main-title: #93c5fd;
+
+    --table-header-bg: #1e293b;
+    --table-subheader-bg: #1e293b;
+    --table-cell-bg: #0f172a;
+    --table-hover: #1e293b;
+    --table-shadow: rgba(0,0,0,0.5);
+}
+
+/* --- Base --- */
+body {
+    background: var(--main-bg);
+    color: var(--main-text);
+    transition: background 0.2s, color 0.2s;
+}
+
+.main-content {
+    padding: 1.5rem;
+    background: var(--main-bg);
+    min-height: 100vh;
+    transition: background 0.2s;
+}
+
+.main-title {
+    font-weight: 700;
+    color: var(--main-title);
+}
+
+/* --- Login --- */
 .login-body {
     min-height: 100vh;
     background: #f4f8fa;
@@ -39,10 +92,10 @@ body {
     font-size: 2.4rem;
 }
 
-/* === SIDEBAR === */
+/* === SIDEBAR (always dark) === */
 .sidebar {
-    background: #181f2c;
-    color: #cfd6ee;
+    background: var(--side-bg);
+    color: var(--side-text);
     min-height: 100vh;
 }
 
@@ -61,7 +114,7 @@ body {
     padding: 1rem 1.2rem 0.8rem;
     font-weight: 600;
     color: #ffffff;
-    border-bottom: 2px solid #202f47;
+    border-bottom: 2px solid var(--side-brand-border);
     margin-bottom: 1rem;
     flex-shrink: 0;
 }
@@ -78,7 +131,7 @@ body {
     overflow-x: hidden;
     padding: 0 0.8rem 1rem;
     scrollbar-width: thin;
-    scrollbar-color: #2a3547 transparent;
+    scrollbar-color: var(--side-divider) transparent;
 }
 
 .sidebar-menu-wrapper::-webkit-scrollbar {
@@ -86,14 +139,14 @@ body {
 }
 
 .sidebar-menu-wrapper::-webkit-scrollbar-thumb {
-    background: #2a3547;
+    background: var(--side-divider);
     border-radius: 4px;
 }
 
 .sidebar-section-title {
     padding: 0.45rem 0.8rem 0.3rem;
     font-weight: 600;
-    color: #77cfff;
+    color: var(--side-heading);
     margin-top: 12px;
     margin-bottom: 2px;
     border-left: 3px solid #4abff9;
@@ -133,7 +186,7 @@ body {
 }
 
 .sidebar .nav-link {
-    color: #cfd6ee !important;
+    color: var(--side-text) !important;
     font-weight: 500;
     padding: 0.55rem 0.8rem 0.55rem 1.6rem;
     border-radius: 6px;
@@ -155,15 +208,15 @@ body {
 .sidebar .nav-link.active,
 .sidebar .nav-link:hover {
     color: #ffffff !important;
-    background: #242f49;
-    border-left: 2px solid #49f0bd;
+    background: var(--side-hover);
+    border-left: 2px solid var(--side-accent);
 }
 
 .sidebar-bottom {
     flex-shrink: 0;
     padding: 0.8rem 1rem 0.6rem;
-    border-top: 1px solid #2a3547;
-    background: #181f2c;
+    border-top: 1px solid var(--side-divider);
+    background: var(--side-bg);
 }
 
 .sidebar-user {
@@ -186,19 +239,63 @@ body {
     justify-content: center;
 }
 
-.main-content {
-    padding: 1.5rem;
+/* Theme toggle in sidebar */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    margin-bottom: 0.5rem;
+    background: #1e2a3d;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    font-size: 0.78rem;
+    color: #cfd6ee;
+}
+
+.theme-toggle:hover {
+    background: #242f49;
+}
+
+.theme-toggle-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.theme-toggle-track {
+    width: 36px;
+    height: 20px;
+    background: #2a3547;
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.25s;
+    flex-shrink: 0;
+}
+
+.theme-toggle-track.active {
+    background: #4abff9;
+}
+
+.theme-toggle-thumb {
+    width: 16px;
+    height: 16px;
     background: #ffffff;
-    min-height: 100vh;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.25s;
 }
 
-.main-title {
-    font-weight: 700;
-    color: #11305e;
+.theme-toggle-track.active .theme-toggle-thumb {
+    transform: translateX(16px);
 }
 
+/* === STATS BAR === */
 .stat-card {
-    background: #ffffff;
+    background: var(--stat-bg);
     border-radius: 10px;
     padding: 1.25rem;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
@@ -211,11 +308,21 @@ body {
 }
 
 .stat-value {
-    color: #11305e;
+    color: var(--main-title);
     font-weight: 700;
     font-size: 2rem;
 }
 
+/* === CENTRALIZADOR TABLE === */
+/* (Styles now inline in ver.php for speed and simplicity) */
+
+/* Badge sizing */
+.badge.rounded-pill {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+/* === MODAL === */
 .modal {
     z-index: 2000;
 }
@@ -224,6 +331,7 @@ body {
     z-index: 1990;
 }
 
+/* === RESPONSIVE === */
 @media (max-width: 991px) {
     .sidebar-brand {
         padding: 0.8rem 1rem 0.6rem;
