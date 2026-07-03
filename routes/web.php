@@ -50,6 +50,7 @@ $router->get('/cursos-materias/edit', [CourseSubjectController::class, 'edit']);
 $router->post('/cursos-materias/update', [CourseSubjectController::class, 'update']);
 $router->post('/cursos-materias/status', [CourseSubjectController::class, 'status']);
 $router->get('/ver-curso', [CourseViewController::class, 'show']);
+$router->get('/ver-curso/excel', [CourseViewController::class, 'excel']);
 $router->get('/boletin', [ReportController::class, 'boletin']);
 $router->get('/boletin/pdf', [ReportController::class, 'pdf']);
 $router->get('/reportes', [ReportBuilderController::class, 'index']);

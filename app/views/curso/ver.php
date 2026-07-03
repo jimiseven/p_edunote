@@ -20,7 +20,7 @@
     </div>
     <div>
         <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">Volver</a>
-        <button onclick="window.print()" class="btn btn-primary btn-sm ms-1">Imprimir</button>
+        <a href="<?= e(base_url('/ver-curso/excel?curso=' . $course['id_curso'])) ?>" class="btn btn-success btn-sm ms-1">Excel</a>
     </div>
 </div>
 
