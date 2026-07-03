@@ -1,7 +1,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="main-title mb-1">Control de Trimestres</h1>
-        <p class="text-muted mb-0">Habilita el trimestre vigente para la carga de notas y ajusta sus fechas.</p>
+        <p class="text-muted mb-0">Habilita uno o mas trimestres para la carga de notas y ajusta sus fechas.</p>
     </div>
 </div>
 
@@ -68,16 +68,18 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-<?= (int) $trimestre['esta_activo'] === 1 ? 'success' : 'secondary' ?>">
-                                            <?= (int) $trimestre['esta_activo'] === 1 ? 'Activo para carga' : 'Inactivo' ?>
+                                            <?= (int) $trimestre['esta_activo'] === 1 ? 'Habilitado para carga' : 'No habilitado' ?>
                                         </span>
                                     </td>
                                     <td class="text-end">
-                                        <?php if ((int) $trimestre['esta_activo'] !== 1): ?>
-                                            <button type="submit" form="activate-trimestre-<?= e($trimestre['id_trimestre']) ?>" class="btn btn-sm btn-success" onclick="return confirm('¿Activar este trimestre para carga de notas?')">
-                                                Activar
+                                        <?php if ((int) $trimestre['esta_activo'] === 1): ?>
+                                            <button type="submit" form="toggle-trimestre-<?= e($trimestre['id_trimestre']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Deshabilitar este trimestre para carga de notas?')">
+                                                Deshabilitar
                                             </button>
                                         <?php else: ?>
-                                            <span class="text-muted">Vigente</span>
+                                            <button type="submit" form="toggle-trimestre-<?= e($trimestre['id_trimestre']) ?>" class="btn btn-sm btn-success" onclick="return confirm('¿Habilitar este trimestre para carga de notas?')">
+                                                Habilitar
+                                            </button>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -92,9 +94,10 @@
             </form>
 
             <?php foreach ($trimestres as $trimestre): ?>
-                <form id="activate-trimestre-<?= e($trimestre['id_trimestre']) ?>" method="POST" action="<?= e(base_url('/trimestres/activate')) ?>" class="d-none">
+                <form id="toggle-trimestre-<?= e($trimestre['id_trimestre']) ?>" method="POST" action="<?= e(base_url('/trimestres/activate')) ?>" class="d-none">
                     <?= csrf_field() ?>
                     <input type="hidden" name="id_trimestre" value="<?= e($trimestre['id_trimestre']) ?>">
+                    <input type="hidden" name="esta_activo" value="<?= (int) $trimestre['esta_activo'] === 1 ? '0' : '1' ?>">
                 </form>
             <?php endforeach; ?>
         <?php endif; ?>

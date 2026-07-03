@@ -29,6 +29,8 @@ class SidebarHelper
 
         $sections = match ($role) {
             'Administrador' => self::adminMenu(),
+            'Secretaria' => self::adminMenu(),
+            'Director' => self::directorMenu(),
             'Docente' => self::teacherMenu(),
             default => [],
         };
@@ -102,6 +104,29 @@ class SidebarHelper
                 'title' => 'ADMINISTRACION',
                 'links' => [
                     ['url' => '/usuarios', 'label' => 'Usuarios', 'icon' => 'user'],
+                ],
+            ],
+            'reportes' => [
+                'title' => 'REPORTES',
+                'links' => [
+                    ['url' => '/reportes', 'label' => 'Reportes', 'icon' => 'file-text'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Menu structure for the Director role. Read-only institutional views.
+     */
+    private static function directorMenu(): array
+    {
+        return [
+            'clases' => [
+                'title' => 'CENTRALIZADORES',
+                'links' => [
+                    ['url' => '/dashboard/inicial', 'label' => 'Inicial', 'icon' => 'user'],
+                    ['url' => '/dashboard/primaria', 'label' => 'Primaria', 'icon' => 'book'],
+                    ['url' => '/dashboard/secundaria', 'label' => 'Secundaria', 'icon' => 'layers'],
                 ],
             ],
             'reportes' => [

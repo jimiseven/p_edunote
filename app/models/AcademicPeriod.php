@@ -68,27 +68,9 @@ class AcademicPeriod
         }
     }
 
-    public static function activate(int $idTrimestre): void
+    public static function setActiveStatus(int $idTrimestre, bool $active): void
     {
-        $idGestion = self::trimestreGestion($idTrimestre);
-        if ($idGestion === null) {
-            return;
-        }
-
-        $conn = Database::connection();
-        $conn->beginTransaction();
-
-        try {
-            $stmt = $conn->prepare('UPDATE trimestres SET esta_activo = 0 WHERE id_gestion = ?');
-            $stmt->execute([$idGestion]);
-
-            $stmt = $conn->prepare('UPDATE trimestres SET esta_activo = 1 WHERE id_trimestre = ?');
-            $stmt->execute([$idTrimestre]);
-
-            $conn->commit();
-        } catch (\Throwable $exception) {
-            $conn->rollBack();
-            throw $exception;
-        }
+        $stmt = Database::connection()->prepare('UPDATE trimestres SET esta_activo = ? WHERE id_trimestre = ?');
+        $stmt->execute([$active ? 1 : 0, $idTrimestre]);
     }
 }

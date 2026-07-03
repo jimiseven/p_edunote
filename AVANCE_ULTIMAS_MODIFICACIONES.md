@@ -29,8 +29,11 @@ Cambios/validaciones aplicadas:
 - La asignacion docente se valida contra el usuario docente logueado.
 - Se evita que un docente cargue notas usando manualmente una asignacion ajena por URL o POST.
 - La carga solo permite trimestres activos.
+- La carga soporta varios trimestres habilitados al mismo tiempo.
+- La interfaz bloquea columnas de trimestres no habilitados y deshabilita el guardado si no hay trimestres habilitados.
 - Se rechazan valores no numericos para cursos que usan nota numerica.
 - Se rechazan notas fuera del rango `0-100`.
+- Se rechazan matriculas que no pertenecen al curso/asignacion del docente.
 - Para nivel Inicial se mantiene el uso de comentarios en lugar de nota numerica.
 - Al guardar una nota valida, se actualiza `estado_carga` en `docente_asignaciones`.
 
@@ -41,6 +44,9 @@ Pruebas realizadas:
 - Carga con nota invalida `abc`: rechazada.
 - Carga en trimestre inactivo: rechazada.
 - Carga con nota valida `85`: guardada correctamente.
+- Carga temporal con dos trimestres habilitados: guardada correctamente.
+- Intento de guardar en trimestre no habilitado: rechazado.
+- Intento de guardar una matricula ajena a la asignacion: rechazado.
 - Verificacion en tabla `calificaciones`.
 - Verificacion de `estado_carga = CARGADO`.
 - Verificacion de rutas:
@@ -79,12 +85,14 @@ Funcionalidad implementada:
 - Ver trimestres por gestion.
 - Editar fechas de inicio y fin de cada trimestre.
 - Activar un trimestre para carga de notas.
-- Al activar un trimestre, se desactivan los demas trimestres de la misma gestion.
+- Al habilitar o deshabilitar un trimestre, los demas trimestres de la gestion conservan su estado.
 - El sidebar de Administrador ahora incluye el enlace `Trimestres` dentro de la seccion `ACADEMICO`.
 
-Regla actual:
+Regla actual actualizada:
 
-- Solo puede existir un trimestre activo por gestion.
+- Puede existir mas de un trimestre habilitado por gestion.
+- Cada trimestre se habilita o deshabilita de forma independiente.
+- La carga de notas solo permite guardar en los trimestres habilitados.
 
 Validaciones realizadas:
 
@@ -100,8 +108,8 @@ Pruebas realizadas:
 - `php -l` completo sobre archivos PHP del proyecto.
 - Login con administrador `admin / admin123`.
 - Carga de `/trimestres` con HTTP 200.
-- Activacion de trimestre ya activo para validar accion.
-- Verificacion en base de datos de que queda exactamente un trimestre activo para la gestion.
+- Activacion/desactivacion individual de trimestres.
+- Verificacion en base de datos de que pueden quedar varios trimestres habilitados para la misma gestion.
 
 Resultado: modulo `Control de Trimestres` implementado y validado.
 
@@ -138,42 +146,57 @@ Nota: `GradeController.php` y `Grade.php` ya tenian cambios relacionados con seg
 - Reportes dinamicos.
 - Control de trimestres.
 
+### Decisiones funcionales ya respondidas
+
+- Director: solo lectura de dashboards, centralizadores, boletines y reportes creados.
+- Secretaria: mismos accesos que Administrador.
+- Trimestres: pueden existir varios trimestres habilitados por gestion.
+- Carga de notas: se realiza solo en trimestres habilitados.
+- Nivel Inicial: solo comentarios, no nota numerica.
+- Responsables: por ahora basta con un responsable principal.
+- Boletin: debe existir por curso y por estudiante.
+- Reportes dinamicos: son prioridad alta del proyecto.
+- Anuncios: visibles para todos y administrados por Secretaria/Administrador.
+- Auditoria: no se implementa por ahora.
+
 ### Validaciones recientes exitosas
 
 - Sintaxis PHP completa del proyecto: OK.
 - Ruta `/trimestres`: OK.
-- Activacion de trimestre: OK.
+- Activacion/desactivacion individual de trimestres: OK.
+- Multiples trimestres habilitados por gestion: OK.
+- Carga de notas en multiples trimestres habilitados: OK.
+- Rechazo de matricula ajena a la asignacion: OK.
 - Flujo de carga de notas: OK.
 - Rechazo de nota invalida: OK.
 - Rechazo de carga en trimestre inactivo: OK.
 
-## Preguntas Pendientes Para Continuar la Revision
+## Decisiones Respondidas Para Continuar
 
-1. Roles Director y Secretaria: deben tener acceso a los mismos modulos que Administrador, o deben tener permisos distintos?
+1. Roles Director y Secretaria: Director solo lectura; Secretaria con mismos accesos que Administrador.
 
-2. Control de Trimestres: esta bien que solo pueda existir un trimestre activo por gestion, o se debe permitir mas de un trimestre activo al mismo tiempo?
+2. Control de Trimestres: se permite mas de un trimestre habilitado por gestion.
 
-3. Carga de notas: el docente debe poder modificar notas ya cargadas mientras el trimestre esta activo, o una vez guardadas deben bloquearse?
+3. Carga de notas: la carga se realiza de acuerdo a los trimestres habilitados.
 
-4. Nivel Inicial: es correcto que Inicial use comentarios en lugar de nota numerica, o tambien debe manejar calificacion numerica?
+4. Nivel Inicial: solo comentarios para guardar notas.
 
-5. Responsables: se debe implementar la gestion completa de varios responsables desde la pantalla del estudiante, o por ahora basta con un responsable principal?
+5. Responsables: por ahora basta con un responsable principal.
 
-6. Boletin: debe generarse por estudiante individual, por curso completo, o deben existir ambas opciones?
+6. Boletin: deben existir ambas opciones, por curso y por estudiante.
 
-7. Reportes dinamicos: se debe priorizar el endurecimiento de seguridad del constructor de reportes antes de avanzar con nuevos modulos?
+7. Reportes dinamicos: son la base mas importante del proyecto y tienen prioridad alta.
 
-8. Anuncios/notificaciones: se implementa ahora? Si se implementa, que roles pueden publicar anuncios?
+8. Anuncios/notificaciones: seran redactados por Secretaria/Administrador y visibles para todos.
 
-9. Auditoria: se deben registrar acciones importantes como crear usuario, cambiar trimestre activo, cargar notas, editar estudiante, etc.?
+9. Auditoria: no se implementa por ahora.
 
-10. Siguiente prioridad: que se debe trabajar primero?
-    - Permisos y menus para Director y Secretaria.
-    - Responsables multiples completos.
-    - Seguridad de reportes dinamicos.
-    - Auditoria.
-    - Anuncios.
-    - Bloqueo/cierre de notas.
+## Pendientes Priorizados
+
+- Ajustar boletin por estudiante individual.
+- Endurecer seguridad y permisos de reportes dinamicos.
+- Implementar descarga de reportes creados para Director.
+- Implementar modulo de anuncios.
 
 ## Recomendacion Tecnica Para Seguir
 

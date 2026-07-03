@@ -11,7 +11,7 @@ class CourseViewController extends Controller
 {
     public function show(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
 
         $idCurso = (int) ($_GET['curso'] ?? 0);
         if ($idCurso <= 0) {

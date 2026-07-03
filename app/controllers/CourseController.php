@@ -12,7 +12,7 @@ class CourseController extends Controller
 {
     public function index(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $search = trim($_GET['search'] ?? '');
         $this->view('courses/index', [
@@ -26,7 +26,7 @@ class CourseController extends Controller
 
     public function create(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $this->view('courses/create', [
             'title' => 'Nuevo Curso',
@@ -36,7 +36,7 @@ class CourseController extends Controller
 
     public function store(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $data = $this->validatedData();
@@ -57,7 +57,7 @@ class CourseController extends Controller
 
     public function edit(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $id = (int) ($_GET['id'] ?? 0);
         $course = CourseAdmin::find($id);
@@ -75,7 +75,7 @@ class CourseController extends Controller
 
     public function update(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_curso'] ?? 0);
@@ -97,7 +97,7 @@ class CourseController extends Controller
 
     public function status(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_curso'] ?? 0);

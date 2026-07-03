@@ -12,7 +12,7 @@ class SubjectController extends Controller
 {
     public function index(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $search = trim($_GET['search'] ?? '');
         $this->view('subjects/index', [
@@ -26,7 +26,7 @@ class SubjectController extends Controller
 
     public function create(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $this->view('subjects/create', [
             'title' => 'Nueva Materia',
@@ -37,7 +37,7 @@ class SubjectController extends Controller
 
     public function store(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $data = $this->validatedData();
@@ -58,7 +58,7 @@ class SubjectController extends Controller
 
     public function edit(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $id = (int) ($_GET['id'] ?? 0);
         $subject = SubjectAdmin::find($id);
@@ -77,7 +77,7 @@ class SubjectController extends Controller
 
     public function update(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_materia'] ?? 0);
@@ -99,7 +99,7 @@ class SubjectController extends Controller
 
     public function status(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_materia'] ?? 0);

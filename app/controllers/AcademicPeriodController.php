@@ -11,7 +11,7 @@ class AcademicPeriodController extends Controller
 {
     public function index(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $gestiones = AcademicPeriod::allGestiones();
         $idGestion = (int) ($_GET['gestion'] ?? ($gestiones[0]['id_gestion'] ?? 0));
@@ -32,7 +32,7 @@ class AcademicPeriodController extends Controller
 
     public function update(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $idGestion = (int) ($_POST['id_gestion'] ?? 0);
@@ -54,7 +54,7 @@ class AcademicPeriodController extends Controller
 
     public function activate(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $idTrimestre = (int) ($_POST['id_trimestre'] ?? 0);
@@ -64,8 +64,9 @@ class AcademicPeriodController extends Controller
             $this->redirect('/trimestres');
         }
 
-        AcademicPeriod::activate($idTrimestre);
-        flash('success', 'Trimestre activo actualizado.');
+        $active = (int) ($_POST['esta_activo'] ?? 0) === 1;
+        AcademicPeriod::setActiveStatus($idTrimestre, $active);
+        flash('success', $active ? 'Trimestre habilitado para carga.' : 'Trimestre deshabilitado para carga.');
         $this->redirect('/trimestres?gestion=' . $idGestion);
     }
 

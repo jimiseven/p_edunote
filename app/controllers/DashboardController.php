@@ -11,7 +11,7 @@ class DashboardController extends Controller
 {
     public function index(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria', 'Director', 'Docente']);
 
         if (($_SESSION['user_role'] ?? '') === 'Docente') {
             $this->redirect('/docente/dashboard');
@@ -25,7 +25,7 @@ class DashboardController extends Controller
 
     public function inicial(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
 
         $cursos = Dashboard::coursesByLevel('Inicial');
         $totalCursos = count($cursos);
@@ -45,7 +45,7 @@ class DashboardController extends Controller
 
     public function primaria(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
 
         $cursos = Dashboard::coursesByLevel('Primaria');
         $totalCursos = count($cursos);
@@ -65,7 +65,7 @@ class DashboardController extends Controller
 
     public function secundaria(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
 
         $cursos = Dashboard::coursesByLevel('Secundaria');
         $totalCursos = count($cursos);

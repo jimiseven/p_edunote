@@ -12,7 +12,7 @@ class TeacherAssignmentController extends Controller
 {
     public function index(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $filters = [
             'nivel' => trim($_GET['nivel'] ?? ''),
@@ -30,13 +30,13 @@ class TeacherAssignmentController extends Controller
 
     public function create(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         $this->form('teacher_assignments/create', 'Nueva Asignacion Docente');
     }
 
     public function store(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $data = $this->validatedData();
@@ -57,7 +57,7 @@ class TeacherAssignmentController extends Controller
 
     public function edit(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $id = (int) ($_GET['id'] ?? 0);
         $assignment = TeacherAssignment::find($id);
@@ -71,7 +71,7 @@ class TeacherAssignmentController extends Controller
 
     public function update(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_asignacion'] ?? 0);
@@ -93,7 +93,7 @@ class TeacherAssignmentController extends Controller
 
     public function status(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_asignacion'] ?? 0);

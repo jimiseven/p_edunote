@@ -11,7 +11,7 @@ class ReportBuilderController extends Controller
 {
     public function index(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
 
         $this->view('reportes/index', [
             'title' => 'Lista de Reportes',
@@ -23,7 +23,7 @@ class ReportBuilderController extends Controller
 
     public function constructor(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $editId = (int) ($_GET['editar'] ?? 0);
         $reporte = null;
@@ -111,7 +111,7 @@ class ReportBuilderController extends Controller
 
     public function ver(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
 
         $id = (int) ($_GET['id'] ?? 0);
         $reporte = ReportBuilder::find($id);
@@ -137,7 +137,7 @@ class ReportBuilderController extends Controller
 
     public function delete(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $id = (int) ($_GET['id'] ?? 0);
         if ($id > 0) {

@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function index(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $search = trim($_GET['search'] ?? '');
         $this->view('users/index', [
@@ -27,7 +27,7 @@ class UserController extends Controller
 
     public function create(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $this->view('users/create', [
             'title' => 'Nuevo Usuario',
@@ -38,7 +38,7 @@ class UserController extends Controller
 
     public function store(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $data = $this->validatedData(true);
@@ -59,7 +59,7 @@ class UserController extends Controller
 
     public function edit(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
 
         $id = (int) ($_GET['id'] ?? 0);
         $user = UserAdmin::find($id);
@@ -79,7 +79,7 @@ class UserController extends Controller
 
     public function update(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_usuario'] ?? 0);
@@ -101,7 +101,7 @@ class UserController extends Controller
 
     public function toggleStatus(): void
     {
-        require_role('Administrador');
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_usuario'] ?? 0);

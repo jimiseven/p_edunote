@@ -80,6 +80,27 @@ function require_role(string $role): void
     }
 }
 
+function current_role(): ?string
+{
+    return $_SESSION['user_role'] ?? null;
+}
+
+function has_role(string|array $roles): bool
+{
+    $roles = is_array($roles) ? $roles : [$roles];
+    return in_array(current_role(), $roles, true);
+}
+
+function require_any_role(array $roles): void
+{
+    require_auth();
+
+    if (!has_role($roles)) {
+        http_response_code(403);
+        exit('Acceso no autorizado.');
+    }
+}
+
 function csrf_token(): string
 {
     if (empty($_SESSION['csrf_token'])) {

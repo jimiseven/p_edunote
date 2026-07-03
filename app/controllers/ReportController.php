@@ -11,7 +11,7 @@ class ReportController extends Controller
 {
     public function boletin(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
 
         $idCurso = (int) ($_GET['id_curso'] ?? 0);
         if ($idCurso <= 0) {

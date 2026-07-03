@@ -17,8 +17,21 @@
     <div class="alert alert-danger"><?= e($error) ?></div>
 <?php endif; ?>
 
+<?php $activeTrimestreIds = $activeTrimestreIds ?? []; ?>
+<?php $activeCount = count($activeTrimestreIds); ?>
+
+<?php if ($activeCount === 0): ?>
+    <div class="alert alert-warning">
+        No hay trimestres habilitados para carga de notas en esta gestion. Contacte con administracion o secretaria.
+    </div>
+<?php else: ?>
+    <div class="alert alert-info">
+        Trimestres habilitados para carga: <strong><?= e($activeCount) ?></strong>. Solo esas columnas pueden editarse.
+    </div>
+<?php endif; ?>
+
 <?php if (!$esInicial): ?>
-    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalExcel">
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalExcel" <?= $activeCount > 0 ? '' : 'disabled' ?>>
         Cargar desde Excel
     </button>
 
@@ -35,21 +48,24 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Seleccione el Trimestre:</label>
-                            <select name="bimestre_excel" class="form-select mb-3">
+                            <select name="bimestre_excel" class="form-select mb-3" <?= $activeCount > 0 ? '' : 'disabled' ?>>
+                                <?php $selectedActive = false; ?>
                                 <?php foreach ($trimestres as $t): ?>
-                                    <option value="<?= e($t['id_trimestre']) ?>" <?= $t['esta_activo'] ? '' : 'disabled' ?>>
+                                    <?php $isActive = (int) $t['esta_activo'] === 1; ?>
+                                    <option value="<?= e($t['id_trimestre']) ?>" <?= $isActive ? '' : 'disabled' ?> <?= $isActive && !$selectedActive ? 'selected' : '' ?>>
                                         <?= e($t['nombre']) ?><?= $t['esta_activo'] ? '' : ' (no habilitado)' ?>
                                     </option>
+                                    <?php if ($isActive) $selectedActive = true; ?>
                                 <?php endforeach; ?>
                             </select>
                             <label class="form-label">Pegue aquí la columna de notas:</label>
-                            <textarea name="datos_excel" class="form-control font-monospace" rows="6" placeholder="Pegue aquí SOLO la columna de notas desde Excel"></textarea>
+                            <textarea name="datos_excel" class="form-control font-monospace" rows="6" placeholder="Pegue aquí SOLO la columna de notas desde Excel" <?= $activeCount > 0 ? '' : 'disabled' ?>></textarea>
                             <div class="form-text">Una nota por línea, en el mismo orden que aparecen los estudiantes en la tabla.</div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" name="guardar_excel" class="btn btn-primary">Cargar Notas</button>
+                        <button type="submit" name="guardar_excel" class="btn btn-primary" <?= $activeCount > 0 ? '' : 'disabled' ?>>Cargar Notas</button>
                     </div>
                 </form>
             </div>
@@ -131,7 +147,7 @@
 
         <div class="d-flex justify-content-between p-3 border-top">
             <a href="<?= e(base_url('/docente/dashboard')) ?>" class="btn btn-secondary">Volver</a>
-            <button type="submit" class="btn btn-primary">Guardar Notas</button>
+            <button type="submit" class="btn btn-primary" <?= $activeCount > 0 ? '' : 'disabled' ?>>Guardar Notas</button>
         </div>
     </form>
 </div>

@@ -31,6 +31,7 @@ class GradeController extends Controller
         $materiaId = (int) $assignment['id_materia'];
 
         $trimestres = Grade::trimestres($gestionId);
+        $activeTrimestreIds = Grade::activeTrimestreIds($gestionId);
         $students = Grade::enrolledStudents($cursoId, $gestionId);
         $existingGrades = Grade::existingGrades($materiaId, $gestionId, $esInicial);
 
@@ -38,6 +39,7 @@ class GradeController extends Controller
             'title' => 'Cargar Notas - ' . $assignment['materia'],
             'assignment' => $assignment,
             'trimestres' => $trimestres,
+            'activeTrimestreIds' => $activeTrimestreIds,
             'students' => $students,
             'existingGrades' => $existingGrades,
             'esInicial' => $esInicial,

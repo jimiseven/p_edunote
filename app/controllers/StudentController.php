@@ -13,7 +13,7 @@ class StudentController extends Controller
 {
     public function index(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria']);
 
         $search = trim($_GET['search'] ?? '');
         $this->view('students/index', [
@@ -27,7 +27,7 @@ class StudentController extends Controller
 
     public function create(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria']);
 
         $this->view('students/create', [
             'title' => 'Registro de Estudiante',
@@ -38,7 +38,7 @@ class StudentController extends Controller
 
     public function store(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $data = $this->validatedData();
@@ -59,7 +59,7 @@ class StudentController extends Controller
 
     public function show(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria']);
 
         $id = (int) ($_GET['id'] ?? 0);
         $student = Student::find($id);
@@ -76,7 +76,7 @@ class StudentController extends Controller
 
     public function edit(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria']);
 
         $id = (int) ($_GET['id'] ?? 0);
         $student = Student::find($id);
@@ -95,7 +95,7 @@ class StudentController extends Controller
 
     public function update(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_estudiante'] ?? 0);
@@ -117,7 +117,7 @@ class StudentController extends Controller
 
     public function delete(): void
     {
-        require_auth();
+        require_any_role(['Administrador', 'Secretaria']);
         verify_csrf();
 
         $id = (int) ($_POST['id_estudiante'] ?? 0);

@@ -110,6 +110,11 @@ class Grade
                 throw new \RuntimeException('No hay trimestres activos para carga de notas.');
             }
 
+            $validMatriculas = self::assignmentMatriculaIds($idAsignacion, $idGestion);
+            if (empty($validMatriculas)) {
+                throw new \RuntimeException('No hay estudiantes inscritos para esta asignacion.');
+            }
+
             $upsertNota = $conn->prepare(
                 "INSERT INTO calificaciones (id_matricula, id_materia, id_trimestre, id_asignacion, nota, estado)
                  VALUES (?, ?, ?, ?, ?, 'borrador')
@@ -133,6 +138,11 @@ class Grade
             );
 
             foreach ($gradesData as $idMatricula => $trimestres) {
+                $idMatricula = (int) $idMatricula;
+                if (!in_array($idMatricula, $validMatriculas, true)) {
+                    throw new \RuntimeException('La matricula enviada no pertenece a esta asignacion.');
+                }
+
                 foreach ($trimestres as $idTrimestre => $valor) {
                     $idTrimestre = (int) $idTrimestre;
                     if (!in_array($idTrimestre, $activeTrimestres, true)) {
@@ -143,13 +153,13 @@ class Grade
 
                     if ($esInicial) {
                         if ($valor === '') {
-                            $deleteStmt->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre]);
+                            $deleteStmt->execute([$idMatricula, $idMateria, (int) $idTrimestre]);
                             continue;
                         }
-                        $upsertComentario->execute([(int) $idMatricula, $idMateria, $idTrimestre, $idAsignacion, $valor]);
+                        $upsertComentario->execute([$idMatricula, $idMateria, $idTrimestre, $idAsignacion, $valor]);
                     } else {
                         if ($valor === '') {
-                            $deleteStmt->execute([(int) $idMatricula, $idMateria, $idTrimestre]);
+                            $deleteStmt->execute([$idMatricula, $idMateria, $idTrimestre]);
                             continue;
                         }
 
@@ -164,9 +174,9 @@ class Grade
                         }
 
                         if ($notaValor === 0.0) {
-                            $upsertNotaZero->execute([(int) $idMatricula, $idMateria, $idTrimestre, $idAsignacion]);
+                            $upsertNotaZero->execute([$idMatricula, $idMateria, $idTrimestre, $idAsignacion]);
                         } else {
-                            $upsertNota->execute([(int) $idMatricula, $idMateria, $idTrimestre, $idAsignacion, $notaValor]);
+                            $upsertNota->execute([$idMatricula, $idMateria, $idTrimestre, $idAsignacion, $notaValor]);
                         }
                     }
                 }
@@ -180,5 +190,25 @@ class Grade
             $conn->rollBack();
             throw $e;
         }
+    }
+
+    private static function assignmentMatriculaIds(int $idAsignacion, int $idGestion): array
+    {
+        $stmt = Database::connection()->prepare(
+            "SELECT m.id_matricula
+             FROM docente_asignaciones da
+             INNER JOIN curso_materia cm ON cm.id_curso_materia = da.id_curso_materia
+             INNER JOIN matriculas m ON m.id_curso = cm.id_curso AND m.id_gestion = da.id_gestion
+             INNER JOIN estudiantes e ON e.id_estudiante = m.id_estudiante
+             WHERE da.id_asignacion = ?
+               AND da.id_gestion = ?
+               AND da.estado = 'activo'
+               AND m.estado = 'activo'
+               AND m.deleted_at IS NULL
+               AND e.deleted_at IS NULL"
+        );
+        $stmt->execute([$idAsignacion, $idGestion]);
+
+        return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 }

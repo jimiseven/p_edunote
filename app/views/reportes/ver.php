@@ -4,7 +4,9 @@
         <p class="text-muted mb-0">Tipo: <?= e($reporte['tipo_base']) ?> &mdash; Creado: <?= e(date('d/m/Y H:i', strtotime($reporte['created_at'] ?? 'now'))) ?></p>
     </div>
     <div class="d-flex gap-2">
-        <a href="<?= e(base_url('/reportes/constructor?editar=' . $reporte['id_reporte'])) ?>" class="btn btn-warning btn-sm">Editar</a>
+        <?php if (has_role(['Administrador', 'Secretaria'])): ?>
+            <a href="<?= e(base_url('/reportes/constructor?editar=' . $reporte['id_reporte'])) ?>" class="btn btn-warning btn-sm">Editar</a>
+        <?php endif; ?>
         <a href="<?= e(base_url('/reportes')) ?>" class="btn btn-outline-secondary btn-sm">Volver</a>
     </div>
 </div>
