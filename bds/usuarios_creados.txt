@@ -1,0 +1,18 @@
+LISTA DE USUARIOS DEL SISTEMA p_edunote
+=============================================
+
+ADMINISTRADOR:
+  usuario: admin
+  password: admin123
+
+DOCENTES:
+  usuario: 52188000      password: (contraseña original del sistema)
+  usuario: juan          password: 123456
+  usuario: maria         password: 123456
+  usuario: carlos        password: 123456
+  usuario: rosa          password: 123456
+  usuario: luis          password: 123456
+  usuario: patricia      password: 123456
+
+NOTA: Todos los docentes nuevos (juan, maria, carlos, rosa, luis, patricia)
+tienen acceso al sistema con password 123456 y pertenecen al rol Docente.
