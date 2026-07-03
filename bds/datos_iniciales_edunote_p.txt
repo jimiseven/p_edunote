@@ -1,0 +1,91 @@
+-- Datos iniciales para edunote_p
+-- Ejecutar despues de bds/estructura_edunote_p.txt
+-- Usuario inicial: admin
+-- Contrasena inicial: admin123
+
+USE `edunote_p`;
+
+INSERT INTO instituciones (nombre, codigo_sie, direccion, telefono, email)
+VALUES ('Unidad Educativa Demo', 'SIE-DEMO', 'Direccion institucional', '00000000', 'contacto@demo.local')
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre);
+
+INSERT INTO gestiones (anio, nombre, fecha_inicio, fecha_fin, estado)
+VALUES (2026, 'Gestion 2026', '2026-02-01', '2026-11-30', 'activa')
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), estado = VALUES(estado);
+
+INSERT INTO trimestres (id_gestion, numero, nombre, fecha_inicio, fecha_fin, esta_activo)
+SELECT id_gestion, 1, 'Primer Trimestre', '2026-02-01', '2026-05-15', 1 FROM gestiones WHERE anio = 2026
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), esta_activo = VALUES(esta_activo);
+
+INSERT INTO trimestres (id_gestion, numero, nombre, fecha_inicio, fecha_fin, esta_activo)
+SELECT id_gestion, 2, 'Segundo Trimestre', '2026-05-16', '2026-08-31', 0 FROM gestiones WHERE anio = 2026
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), esta_activo = VALUES(esta_activo);
+
+INSERT INTO trimestres (id_gestion, numero, nombre, fecha_inicio, fecha_fin, esta_activo)
+SELECT id_gestion, 3, 'Tercer Trimestre', '2026-09-01', '2026-11-30', 0 FROM gestiones WHERE anio = 2026
+ON DUPLICATE KEY UPDATE nombre = VALUES(nombre), esta_activo = VALUES(esta_activo);
+
+INSERT INTO roles (nombre, descripcion) VALUES
+('Administrador', 'Administra usuarios, configuracion, datos academicos y reportes'),
+('Director', 'Consulta indicadores, centralizadores y reportes institucionales'),
+('Secretaria', 'Registra estudiantes, responsables y datos administrativos'),
+('Docente', 'Consulta cursos asignados y registra calificaciones')
+ON DUPLICATE KEY UPDATE descripcion = VALUES(descripcion);
+
+INSERT INTO permisos (codigo, descripcion) VALUES
+('dashboard.ver', 'Ver panel principal'),
+('usuarios.ver', 'Ver usuarios'),
+('usuarios.crear', 'Crear usuarios'),
+('usuarios.editar', 'Editar usuarios'),
+('usuarios.eliminar', 'Eliminar usuarios'),
+('roles.administrar', 'Administrar roles y permisos'),
+('estudiantes.ver', 'Ver estudiantes'),
+('estudiantes.crear', 'Crear estudiantes'),
+('estudiantes.editar', 'Editar estudiantes'),
+('estudiantes.eliminar', 'Eliminar estudiantes'),
+('responsables.administrar', 'Administrar responsables'),
+('cursos.administrar', 'Administrar cursos'),
+('materias.administrar', 'Administrar materias'),
+('docentes.asignar', 'Asignar docentes a cursos y materias'),
+('notas.ver', 'Ver calificaciones'),
+('notas.cargar', 'Cargar calificaciones'),
+('reportes.ver', 'Ver reportes'),
+('reportes.generar', 'Generar reportes'),
+('anuncios.administrar', 'Administrar anuncios'),
+('auditoria.ver', 'Ver auditoria')
+ON DUPLICATE KEY UPDATE descripcion = VALUES(descripcion);
+
+INSERT IGNORE INTO rol_permiso (id_rol, id_permiso)
+SELECT r.id_rol, p.id_permiso
+FROM roles r
+CROSS JOIN permisos p
+WHERE r.nombre = 'Administrador';
+
+INSERT IGNORE INTO rol_permiso (id_rol, id_permiso)
+SELECT r.id_rol, p.id_permiso
+FROM roles r
+JOIN permisos p ON p.codigo IN ('dashboard.ver','estudiantes.ver','notas.ver','reportes.ver','reportes.generar','auditoria.ver')
+WHERE r.nombre = 'Director';
+
+INSERT IGNORE INTO rol_permiso (id_rol, id_permiso)
+SELECT r.id_rol, p.id_permiso
+FROM roles r
+JOIN permisos p ON p.codigo IN ('dashboard.ver','estudiantes.ver','estudiantes.crear','estudiantes.editar','responsables.administrar','reportes.ver','reportes.generar','anuncios.administrar')
+WHERE r.nombre = 'Secretaria';
+
+INSERT IGNORE INTO rol_permiso (id_rol, id_permiso)
+SELECT r.id_rol, p.id_permiso
+FROM roles r
+JOIN permisos p ON p.codigo IN ('dashboard.ver','notas.ver','notas.cargar','reportes.ver')
+WHERE r.nombre = 'Docente';
+
+INSERT INTO personal (nombres, apellidos, ci, celular, email, cargo, estado)
+VALUES ('Administrador', 'Principal', 'ADMIN-001', '00000000', 'admin@edunote.local', 'Administrador del Sistema', 1)
+ON DUPLICATE KEY UPDATE nombres = VALUES(nombres), apellidos = VALUES(apellidos), estado = VALUES(estado);
+
+INSERT INTO usuarios (id_personal, id_rol, username, email, password_hash, estado)
+SELECT p.id_personal, r.id_rol, 'admin', 'admin@edunote.local', '$2y$10$BtgXGlPuiEpk1jSlWHjpJuqsLhYDCOlNpTXqhKOxX2IrnGlabkRZ.', 'activo'
+FROM personal p
+JOIN roles r ON r.nombre = 'Administrador'
+WHERE p.ci = 'ADMIN-001'
+ON DUPLICATE KEY UPDATE id_rol = VALUES(id_rol), estado = VALUES(estado);

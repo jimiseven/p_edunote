@@ -1,0 +1,443 @@
+-- Estructura inicial de base de datos para EDUFILE / EduNote nuevo
+-- Base de datos: edunote_p
+-- Este archivo solo crea estructura. No inserta datos iniciales.
+
+CREATE DATABASE IF NOT EXISTS `edunote_p`
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE `edunote_p`;
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+CREATE TABLE instituciones (
+  id_institucion INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(150) NOT NULL,
+  codigo_sie VARCHAR(30) DEFAULT NULL,
+  direccion VARCHAR(255) DEFAULT NULL,
+  telefono VARCHAR(30) DEFAULT NULL,
+  email VARCHAR(120) DEFAULT NULL,
+  logo VARCHAR(255) DEFAULT NULL,
+  estado TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uk_instituciones_codigo_sie (codigo_sie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE gestiones (
+  id_gestion INT AUTO_INCREMENT PRIMARY KEY,
+  anio YEAR NOT NULL,
+  nombre VARCHAR(20) NOT NULL,
+  fecha_inicio DATE DEFAULT NULL,
+  fecha_fin DATE DEFAULT NULL,
+  estado ENUM('planificada','activa','cerrada') NOT NULL DEFAULT 'planificada',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_gestiones_anio (anio)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE trimestres (
+  id_trimestre INT AUTO_INCREMENT PRIMARY KEY,
+  id_gestion INT NOT NULL,
+  numero TINYINT NOT NULL,
+  nombre VARCHAR(50) NOT NULL,
+  fecha_inicio DATE DEFAULT NULL,
+  fecha_fin DATE DEFAULT NULL,
+  esta_activo TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_trimestres_gestion_numero (id_gestion, numero),
+  CONSTRAINT fk_trimestres_gestion FOREIGN KEY (id_gestion) REFERENCES gestiones(id_gestion) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE roles (
+  id_rol INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(60) NOT NULL,
+  descripcion VARCHAR(255) DEFAULT NULL,
+  estado TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_roles_nombre (nombre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE permisos (
+  id_permiso INT AUTO_INCREMENT PRIMARY KEY,
+  codigo VARCHAR(100) NOT NULL,
+  descripcion VARCHAR(255) DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_permisos_codigo (codigo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE rol_permiso (
+  id_rol INT NOT NULL,
+  id_permiso INT NOT NULL,
+  PRIMARY KEY (id_rol, id_permiso),
+  CONSTRAINT fk_rol_permiso_rol FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_rol_permiso_permiso FOREIGN KEY (id_permiso) REFERENCES permisos(id_permiso) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE personal (
+  id_personal INT AUTO_INCREMENT PRIMARY KEY,
+  nombres VARCHAR(120) NOT NULL,
+  apellidos VARCHAR(120) NOT NULL,
+  ci VARCHAR(30) NOT NULL,
+  celular VARCHAR(30) DEFAULT NULL,
+  email VARCHAR(120) DEFAULT NULL,
+  cargo VARCHAR(80) DEFAULT NULL,
+  especialidad VARCHAR(120) DEFAULT NULL,
+  estado TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uk_personal_ci (ci),
+  UNIQUE KEY uk_personal_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE usuarios (
+  id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+  id_personal INT DEFAULT NULL,
+  id_rol INT NOT NULL,
+  username VARCHAR(80) NOT NULL,
+  email VARCHAR(120) DEFAULT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  estado ENUM('activo','inactivo','bloqueado') NOT NULL DEFAULT 'activo',
+  ultimo_login DATETIME DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uk_usuarios_username (username),
+  UNIQUE KEY uk_usuarios_email (email),
+  KEY idx_usuarios_rol (id_rol),
+  CONSTRAINT fk_usuarios_personal FOREIGN KEY (id_personal) REFERENCES personal(id_personal) ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_usuarios_rol FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE responsables (
+  id_responsable INT AUTO_INCREMENT PRIMARY KEY,
+  nombres VARCHAR(120) NOT NULL,
+  apellido_paterno VARCHAR(120) DEFAULT NULL,
+  apellido_materno VARCHAR(120) DEFAULT NULL,
+  ci VARCHAR(30) DEFAULT NULL,
+  fecha_nacimiento DATE DEFAULT NULL,
+  parentesco_general VARCHAR(50) DEFAULT NULL,
+  grado_instruccion ENUM('Ninguno','Primaria','Secundaria','Tecnico','Universitario','Postgrado') DEFAULT NULL,
+  idioma_frecuente VARCHAR(80) DEFAULT NULL,
+  ocupacion VARCHAR(120) DEFAULT NULL,
+  celular VARCHAR(30) DEFAULT NULL,
+  direccion VARCHAR(255) DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uk_responsables_ci (ci)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiantes (
+  id_estudiante INT AUTO_INCREMENT PRIMARY KEY,
+  rude VARCHAR(30) NOT NULL,
+  nombres VARCHAR(120) NOT NULL,
+  apellido_paterno VARCHAR(120) DEFAULT NULL,
+  apellido_materno VARCHAR(120) DEFAULT NULL,
+  genero ENUM('Masculino','Femenino') DEFAULT NULL,
+  ci VARCHAR(30) DEFAULT NULL,
+  fecha_nacimiento DATE DEFAULT NULL,
+  pais VARCHAR(80) DEFAULT 'Bolivia',
+  provincia_departamento VARCHAR(120) DEFAULT NULL,
+  estado ENUM('activo','retirado','egresado','trasladado') NOT NULL DEFAULT 'activo',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uk_estudiantes_rude (rude),
+  KEY idx_estudiantes_ci (ci),
+  KEY idx_estudiantes_apellidos (apellido_paterno, apellido_materno)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_responsable (
+  id_estudiante_responsable INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  id_responsable INT NOT NULL,
+  parentesco ENUM('Padre','Madre','Tutor','Otro') NOT NULL,
+  es_principal TINYINT(1) NOT NULL DEFAULT 0,
+  vive_con_estudiante TINYINT(1) NOT NULL DEFAULT 0,
+  autorizado_recoger TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_estudiante_responsable (id_estudiante, id_responsable),
+  CONSTRAINT fk_er_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_er_responsable FOREIGN KEY (id_responsable) REFERENCES responsables(id_responsable) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_direccion (
+  id_direccion INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  departamento VARCHAR(80) DEFAULT NULL,
+  provincia VARCHAR(80) DEFAULT NULL,
+  municipio VARCHAR(80) DEFAULT NULL,
+  localidad VARCHAR(120) DEFAULT NULL,
+  comunidad VARCHAR(120) DEFAULT NULL,
+  zona VARCHAR(120) DEFAULT NULL,
+  numero_vivienda VARCHAR(30) DEFAULT NULL,
+  telefono VARCHAR(30) DEFAULT NULL,
+  celular VARCHAR(30) DEFAULT NULL,
+  UNIQUE KEY uk_estudiante_direccion (id_estudiante),
+  CONSTRAINT fk_direccion_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_salud (
+  id_salud INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  tiene_seguro TINYINT(1) NOT NULL DEFAULT 0,
+  acceso_posta TINYINT(1) NOT NULL DEFAULT 0,
+  acceso_centro_salud TINYINT(1) NOT NULL DEFAULT 0,
+  acceso_hospital TINYINT(1) NOT NULL DEFAULT 0,
+  observacion VARCHAR(255) DEFAULT NULL,
+  UNIQUE KEY uk_estudiante_salud (id_estudiante),
+  CONSTRAINT fk_salud_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_idioma_cultura (
+  id_idioma_cultura INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  idioma VARCHAR(80) DEFAULT NULL,
+  cultura VARCHAR(120) DEFAULT NULL,
+  UNIQUE KEY uk_estudiante_idioma_cultura (id_estudiante),
+  CONSTRAINT fk_idioma_cultura_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_transporte (
+  id_transporte INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  medio ENUM('a_pie','vehiculo','fluvial','otro') DEFAULT NULL,
+  tiempo_llegada ENUM('menos_media_hora','mas_media_hora') DEFAULT NULL,
+  UNIQUE KEY uk_estudiante_transporte (id_estudiante),
+  CONSTRAINT fk_transporte_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_servicios (
+  id_servicios INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  agua_caneria TINYINT(1) NOT NULL DEFAULT 0,
+  bano TINYINT(1) NOT NULL DEFAULT 0,
+  alcantarillado TINYINT(1) NOT NULL DEFAULT 0,
+  internet TINYINT(1) NOT NULL DEFAULT 0,
+  energia TINYINT(1) NOT NULL DEFAULT 0,
+  recojo_basura TINYINT(1) NOT NULL DEFAULT 0,
+  tipo_vivienda ENUM('alquilada','propia','cedida','anticretico') DEFAULT NULL,
+  UNIQUE KEY uk_estudiante_servicios (id_estudiante),
+  CONSTRAINT fk_servicios_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_actividad_laboral (
+  id_actividad_laboral INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  trabajo TINYINT(1) NOT NULL DEFAULT 0,
+  meses_trabajo SET('enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre') DEFAULT NULL,
+  actividad VARCHAR(120) DEFAULT NULL,
+  turno_manana TINYINT(1) NOT NULL DEFAULT 0,
+  turno_tarde TINYINT(1) NOT NULL DEFAULT 0,
+  turno_noche TINYINT(1) NOT NULL DEFAULT 0,
+  frecuencia ENUM('todos_dias','dias_habiles','fin_de_semana','esporadico','dias_festivos','vacaciones') DEFAULT NULL,
+  UNIQUE KEY uk_estudiante_actividad_laboral (id_estudiante),
+  CONSTRAINT fk_actividad_laboral_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_dificultades (
+  id_dificultad INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  tiene_dificultad TINYINT(1) NOT NULL DEFAULT 0,
+  auditiva ENUM('ninguna','leve','grave','muy_grave','multiple') NOT NULL DEFAULT 'ninguna',
+  visual ENUM('ninguna','leve','grave','muy_grave','multiple') NOT NULL DEFAULT 'ninguna',
+  intelectual ENUM('ninguna','leve','grave','muy_grave','multiple') NOT NULL DEFAULT 'ninguna',
+  fisico_motora ENUM('ninguna','leve','grave','muy_grave','multiple') NOT NULL DEFAULT 'ninguna',
+  psiquica_mental ENUM('ninguna','leve','grave','muy_grave','multiple') NOT NULL DEFAULT 'ninguna',
+  autista ENUM('ninguna','leve','grave','muy_grave','multiple') NOT NULL DEFAULT 'ninguna',
+  UNIQUE KEY uk_estudiante_dificultades (id_estudiante),
+  CONSTRAINT fk_dificultades_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE estudiante_abandono (
+  id_abandono INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  abandono TINYINT(1) NOT NULL DEFAULT 0,
+  motivo ENUM('trabajo','falta_dinero','otro') DEFAULT NULL,
+  observacion VARCHAR(255) DEFAULT NULL,
+  UNIQUE KEY uk_estudiante_abandono (id_estudiante),
+  CONSTRAINT fk_abandono_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE cursos (
+  id_curso INT AUTO_INCREMENT PRIMARY KEY,
+  nivel ENUM('Inicial','Primaria','Secundaria') NOT NULL,
+  grado TINYINT NOT NULL,
+  paralelo VARCHAR(5) NOT NULL,
+  turno ENUM('manana','tarde','noche') DEFAULT NULL,
+  estado TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_cursos_nivel_grado_paralelo (nivel, grado, paralelo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE materias (
+  id_materia INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(150) NOT NULL,
+  abreviatura VARCHAR(30) DEFAULT NULL,
+  descripcion VARCHAR(255) DEFAULT NULL,
+  es_submateria TINYINT(1) NOT NULL DEFAULT 0,
+  id_materia_padre INT DEFAULT NULL,
+  es_extra TINYINT(1) NOT NULL DEFAULT 0,
+  estado TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_materias_padre (id_materia_padre),
+  CONSTRAINT fk_materias_padre FOREIGN KEY (id_materia_padre) REFERENCES materias(id_materia) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE curso_materia (
+  id_curso_materia INT AUTO_INCREMENT PRIMARY KEY,
+  id_curso INT NOT NULL,
+  id_materia INT NOT NULL,
+  estado TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_curso_materia (id_curso, id_materia),
+  CONSTRAINT fk_cm_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_cm_materia FOREIGN KEY (id_materia) REFERENCES materias(id_materia) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE matriculas (
+  id_matricula INT AUTO_INCREMENT PRIMARY KEY,
+  id_estudiante INT NOT NULL,
+  id_curso INT NOT NULL,
+  id_gestion INT NOT NULL,
+  fecha_matricula DATE NOT NULL,
+  estado ENUM('activo','retirado','promovido','reprobado','trasladado') NOT NULL DEFAULT 'activo',
+  observacion VARCHAR(255) DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
+  UNIQUE KEY uk_matricula_estudiante_gestion (id_estudiante, id_gestion),
+  KEY idx_matriculas_curso_gestion (id_curso, id_gestion),
+  CONSTRAINT fk_matriculas_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiantes(id_estudiante) ON UPDATE CASCADE,
+  CONSTRAINT fk_matriculas_curso FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON UPDATE CASCADE,
+  CONSTRAINT fk_matriculas_gestion FOREIGN KEY (id_gestion) REFERENCES gestiones(id_gestion) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE docente_asignaciones (
+  id_asignacion INT AUTO_INCREMENT PRIMARY KEY,
+  id_personal INT NOT NULL,
+  id_curso_materia INT NOT NULL,
+  id_gestion INT NOT NULL,
+  estado ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  estado_carga ENUM('FALTA','CARGADO') NOT NULL DEFAULT 'FALTA',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_docente_asignacion (id_personal, id_curso_materia, id_gestion),
+  CONSTRAINT fk_da_personal FOREIGN KEY (id_personal) REFERENCES personal(id_personal) ON UPDATE CASCADE,
+  CONSTRAINT fk_da_curso_materia FOREIGN KEY (id_curso_materia) REFERENCES curso_materia(id_curso_materia) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_da_gestion FOREIGN KEY (id_gestion) REFERENCES gestiones(id_gestion) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE calificaciones (
+  id_calificacion INT AUTO_INCREMENT PRIMARY KEY,
+  id_matricula INT NOT NULL,
+  id_materia INT NOT NULL,
+  id_trimestre INT NOT NULL,
+  id_asignacion INT DEFAULT NULL,
+  nota DECIMAL(5,2) DEFAULT NULL,
+  comentario TEXT DEFAULT NULL,
+  estado ENUM('borrador','registrado','cerrado') NOT NULL DEFAULT 'registrado',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_calificacion_materia_trimestre (id_matricula, id_materia, id_trimestre),
+  KEY idx_calificaciones_materia (id_materia),
+  KEY idx_calificaciones_trimestre (id_trimestre),
+  CONSTRAINT fk_calificaciones_matricula FOREIGN KEY (id_matricula) REFERENCES matriculas(id_matricula) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_calificaciones_materia FOREIGN KEY (id_materia) REFERENCES materias(id_materia) ON UPDATE CASCADE,
+  CONSTRAINT fk_calificaciones_trimestre FOREIGN KEY (id_trimestre) REFERENCES trimestres(id_trimestre) ON UPDATE CASCADE,
+  CONSTRAINT fk_calificaciones_asignacion FOREIGN KEY (id_asignacion) REFERENCES docente_asignaciones(id_asignacion) ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT chk_calificaciones_nota CHECK (nota IS NULL OR (nota >= 0 AND nota <= 100))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE anuncios (
+  id_anuncio INT AUTO_INCREMENT PRIMARY KEY,
+  titulo VARCHAR(150) NOT NULL,
+  contenido TEXT NOT NULL,
+  fecha_inicio DATE NOT NULL,
+  fecha_fin DATE NOT NULL,
+  id_usuario_creador INT DEFAULT NULL,
+  estado ENUM('borrador','publicado','archivado') NOT NULL DEFAULT 'publicado',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_anuncios_usuario FOREIGN KEY (id_usuario_creador) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE reportes_guardados (
+  id_reporte INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(150) NOT NULL,
+  descripcion VARCHAR(255) DEFAULT NULL,
+  tipo_base VARCHAR(80) NOT NULL,
+  id_usuario INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL,
+  KEY idx_reportes_usuario (id_usuario),
+  CONSTRAINT fk_reportes_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE reportes_columnas (
+  id_columna INT AUTO_INCREMENT PRIMARY KEY,
+  id_reporte INT NOT NULL,
+  campo VARCHAR(120) NOT NULL,
+  alias_mostrar VARCHAR(120) DEFAULT NULL,
+  orden INT NOT NULL DEFAULT 0,
+  CONSTRAINT fk_reportes_columnas_reporte FOREIGN KEY (id_reporte) REFERENCES reportes_guardados(id_reporte) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE reportes_filtros (
+  id_filtro INT AUTO_INCREMENT PRIMARY KEY,
+  id_reporte INT NOT NULL,
+  campo VARCHAR(120) NOT NULL,
+  operador ENUM('=','<>','>','<','>=','<=','entre','contiene','in') NOT NULL DEFAULT '=',
+  valor1 VARCHAR(255) DEFAULT NULL,
+  valor2 VARCHAR(255) DEFAULT NULL,
+  CONSTRAINT fk_reportes_filtros_reporte FOREIGN KEY (id_reporte) REFERENCES reportes_guardados(id_reporte) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE reportes_generados (
+  id_reporte_generado INT AUTO_INCREMENT PRIMARY KEY,
+  id_reporte INT DEFAULT NULL,
+  tipo_archivo ENUM('PDF','EXCEL','CSV') NOT NULL,
+  archivo VARCHAR(255) DEFAULT NULL,
+  filtros_usados JSON DEFAULT NULL,
+  id_usuario INT DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reportes_generados_reporte FOREIGN KEY (id_reporte) REFERENCES reportes_guardados(id_reporte) ON UPDATE CASCADE ON DELETE SET NULL,
+  CONSTRAINT fk_reportes_generados_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE sesiones_usuario (
+  id_sesion BIGINT AUTO_INCREMENT PRIMARY KEY,
+  id_usuario INT NOT NULL,
+  session_id VARCHAR(128) DEFAULT NULL,
+  ip VARCHAR(45) DEFAULT NULL,
+  user_agent VARCHAR(255) DEFAULT NULL,
+  fecha_inicio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_fin DATETIME DEFAULT NULL,
+  estado ENUM('activa','cerrada','expirada') NOT NULL DEFAULT 'activa',
+  KEY idx_sesiones_usuario (id_usuario),
+  CONSTRAINT fk_sesiones_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE auditoria (
+  id_auditoria BIGINT AUTO_INCREMENT PRIMARY KEY,
+  id_usuario INT DEFAULT NULL,
+  accion VARCHAR(100) NOT NULL,
+  tabla_afectada VARCHAR(100) DEFAULT NULL,
+  id_registro VARCHAR(50) DEFAULT NULL,
+  descripcion TEXT DEFAULT NULL,
+  ip VARCHAR(45) DEFAULT NULL,
+  user_agent VARCHAR(255) DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_auditoria_usuario (id_usuario),
+  KEY idx_auditoria_tabla_registro (tabla_afectada, id_registro),
+  CONSTRAINT fk_auditoria_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
