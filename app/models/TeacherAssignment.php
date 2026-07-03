@@ -25,17 +25,25 @@ class TeacherAssignment
 
         $params = [];
         if (!empty($filters['nivel'])) {
-            $sql .= ' AND c.nivel = ?';
-            $params[] = $filters['nivel'];
+            $sql .= ' AND c.nivel = :nivel';
+            $params['nivel'] = $filters['nivel'];
         }
         if (!empty($filters['search'])) {
-            $sql .= " AND (p.nombres LIKE ? OR p.apellidos LIKE ? OR p.ci LIKE ? OR m.nombre LIKE ? OR m.abreviatura LIKE ?)";
+            $sql .= " AND (p.nombres LIKE :search_nombres
+                       OR p.apellidos LIKE :search_apellidos
+                       OR CONCAT(p.nombres, ' ', p.apellidos) LIKE :search_nombre_completo
+                       OR CONCAT(p.apellidos, ' ', p.nombres) LIKE :search_apellido_completo
+                       OR p.ci LIKE :search_ci
+                       OR m.nombre LIKE :search_materia
+                       OR m.abreviatura LIKE :search_abreviatura)";
             $searchVal = '%' . $filters['search'] . '%';
-            $params[] = $searchVal;
-            $params[] = $searchVal;
-            $params[] = $searchVal;
-            $params[] = $searchVal;
-            $params[] = $searchVal;
+            $params['search_nombres'] = $searchVal;
+            $params['search_apellidos'] = $searchVal;
+            $params['search_nombre_completo'] = $searchVal;
+            $params['search_apellido_completo'] = $searchVal;
+            $params['search_ci'] = $searchVal;
+            $params['search_materia'] = $searchVal;
+            $params['search_abreviatura'] = $searchVal;
         }
 
         $sql .= " ORDER BY FIELD(c.nivel, 'Inicial', 'Primaria', 'Secundaria'), c.grado, c.paralelo, m.nombre, p.apellidos";

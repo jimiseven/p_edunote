@@ -24,8 +24,9 @@ class Student
 
         $params = [];
         if ($search !== '') {
-            $sql .= " AND (e.rude LIKE :search OR e.ci LIKE :search OR e.nombres LIKE :search OR e.apellido_paterno LIKE :search OR e.apellido_materno LIKE :search OR r.nombres LIKE :search OR r.ci LIKE :search)";
-            $params['search'] = '%' . $search . '%';
+            $sql .= " AND (e.rude LIKE ? OR e.ci LIKE ? OR e.nombres LIKE ? OR e.apellido_paterno LIKE ? OR e.apellido_materno LIKE ? OR r.nombres LIKE ? OR r.ci LIKE ?)";
+            $searchVal = '%' . $search . '%';
+            $params = [$searchVal, $searchVal, $searchVal, $searchVal, $searchVal, $searchVal, $searchVal];
         }
 
         $sql .= ' ORDER BY e.apellido_paterno ASC, e.apellido_materno ASC, e.nombres ASC';

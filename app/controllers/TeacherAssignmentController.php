@@ -19,6 +19,10 @@ class TeacherAssignmentController extends Controller
             'search' => trim($_GET['search'] ?? ''),
         ];
 
+        if (!in_array($filters['nivel'], ['', 'Inicial', 'Primaria', 'Secundaria'], true)) {
+            $filters['nivel'] = '';
+        }
+
         $this->view('teacher_assignments/index', [
             'title' => 'Asignacion de Docentes',
             'assignments' => TeacherAssignment::all($filters),
