@@ -1,0 +1,147 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Core\Database;
+use PDO;
+
+class Grade
+{
+    public static function assignmentInfo(int $idAsignacion): ?array
+    {
+        $sql = "SELECT da.id_asignacion, da.id_gestion, da.id_curso_materia, da.estado_carga,
+                       cm.id_curso, cm.id_materia,
+                       c.nivel, c.grado, c.paralelo, c.turno,
+                       m.nombre AS materia, m.abreviatura,
+                       g.nombre AS gestion_nombre, g.anio
+                FROM docente_asignaciones da
+                INNER JOIN curso_materia cm ON cm.id_curso_materia = da.id_curso_materia
+                INNER JOIN cursos c ON c.id_curso = cm.id_curso
+                INNER JOIN materias m ON m.id_materia = cm.id_materia
+                INNER JOIN gestiones g ON g.id_gestion = da.id_gestion
+                WHERE da.id_asignacion = ? AND da.estado = 'activo'";
+
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute([$idAsignacion]);
+        $info = $stmt->fetch();
+
+        return $info ?: null;
+    }
+
+    public static function trimestres(int $idGestion): array
+    {
+        $stmt = Database::connection()->prepare(
+            "SELECT id_trimestre, numero, nombre, esta_activo
+             FROM trimestres
+             WHERE id_gestion = ?
+             ORDER BY numero"
+        );
+        $stmt->execute([$idGestion]);
+        return $stmt->fetchAll();
+    }
+
+    public static function enrolledStudents(int $idCurso, int $idGestion): array
+    {
+        $sql = "SELECT e.id_estudiante, e.nombres, e.apellido_paterno, e.apellido_materno, e.genero,
+                       m.id_matricula
+                FROM estudiantes e
+                INNER JOIN matriculas m ON m.id_estudiante = e.id_estudiante
+                WHERE m.id_curso = ?
+                  AND m.id_gestion = ?
+                  AND m.estado = 'activo'
+                  AND m.deleted_at IS NULL
+                  AND e.deleted_at IS NULL
+                ORDER BY e.apellido_paterno, e.apellido_materno, e.nombres";
+
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute([$idCurso, $idGestion]);
+        return $stmt->fetchAll();
+    }
+
+    public static function existingGrades(int $idMateria, int $idGestion, bool $esInicial): array
+    {
+        $field = $esInicial ? 'c.comentario' : 'c.nota';
+        $sql = "SELECT c.id_matricula, c.id_trimestre, $field AS valor
+                FROM calificaciones c
+                INNER JOIN matriculas m ON m.id_matricula = c.id_matricula
+                WHERE c.id_materia = ?
+                  AND m.id_gestion = ?";
+
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute([$idMateria, $idGestion]);
+
+        $grades = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $grades[(int) $row['id_matricula']][(int) $row['id_trimestre']] = $row['valor'];
+        }
+
+        return $grades;
+    }
+
+    public static function saveGrades(int $idAsignacion, int $idMateria, int $idGestion, bool $esInicial, array $gradesData): void
+    {
+        $conn = Database::connection();
+        $conn->beginTransaction();
+
+        try {
+            $upsertNota = $conn->prepare(
+                "INSERT INTO calificaciones (id_matricula, id_materia, id_trimestre, id_asignacion, nota, estado)
+                 VALUES (?, ?, ?, ?, ?, 'borrador')
+                 ON DUPLICATE KEY UPDATE nota = VALUES(nota), updated_at = NOW()"
+            );
+
+            $upsertNotaZero = $conn->prepare(
+                "INSERT INTO calificaciones (id_matricula, id_materia, id_trimestre, id_asignacion, nota, estado)
+                 VALUES (?, ?, ?, ?, 0, 'borrador')
+                 ON DUPLICATE KEY UPDATE nota = VALUES(nota), updated_at = NOW()"
+            );
+
+            $upsertComentario = $conn->prepare(
+                "INSERT INTO calificaciones (id_matricula, id_materia, id_trimestre, id_asignacion, comentario, estado)
+                 VALUES (?, ?, ?, ?, ?, 'borrador')
+                 ON DUPLICATE KEY UPDATE comentario = VALUES(comentario), updated_at = NOW()"
+            );
+
+            $deleteStmt = $conn->prepare(
+                "DELETE FROM calificaciones WHERE id_matricula = ? AND id_materia = ? AND id_trimestre = ?"
+            );
+
+            foreach ($gradesData as $idMatricula => $trimestres) {
+                foreach ($trimestres as $idTrimestre => $valor) {
+                    $valor = trim((string) $valor);
+
+                    if ($esInicial) {
+                        if ($valor === '') {
+                            $deleteStmt->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre]);
+                            continue;
+                        }
+                        $upsertComentario->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre, $idAsignacion, $valor]);
+                    } else {
+                        if ($valor === '') {
+                            $deleteStmt->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre]);
+                            continue;
+                        }
+
+                        $notaValor = floatval(str_replace(',', '.', $valor));
+
+                        if ($notaValor === 0.0) {
+                            $upsertNotaZero->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre, $idAsignacion]);
+                        } else {
+                            $upsertNota->execute([(int) $idMatricula, $idMateria, (int) $idTrimestre, $idAsignacion, $notaValor]);
+                        }
+                    }
+                }
+            }
+
+            $conn->prepare("UPDATE docente_asignaciones SET estado_carga = 'CARGADO', updated_at = NOW() WHERE id_asignacion = ?")
+                 ->execute([$idAsignacion]);
+
+            $conn->commit();
+        } catch (\Throwable $e) {
+            $conn->rollBack();
+            throw $e;
+        }
+    }
+}

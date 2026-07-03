@@ -21,6 +21,20 @@ function e(mixed $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+function view_partial(string $view, array $data = []): string
+{
+    extract($data, EXTR_SKIP);
+
+    $file = BASE_PATH . '/app/views/' . $view . '.php';
+    if (!is_file($file)) {
+        return '';
+    }
+
+    ob_start();
+    require $file;
+    return ob_get_clean();
+}
+
 function flash(string $key, ?string $message = null): ?string
 {
     if ($message !== null) {

@@ -8,38 +8,67 @@
     <link rel="stylesheet" href="<?= e(base_url('/assets/css/app.css')) ?>">
 </head>
 <body>
+    <?php
+        $sidebar = \App\Helpers\SidebarHelper::data();
+        $sections = $sidebar['sections'];
+        $user_name = $sidebar['user_name'];
+    ?>
     <div class="container-fluid">
         <div class="row min-vh-100">
-            <aside class="col-md-3 col-lg-2 sidebar p-0">
-                <div class="sidebar-brand"><span class="logo-icon">E</span><span>EDUFILE</span></div>
-                <nav class="px-3">
-                    <div class="sidebar-section-title">PANEL</div>
-                    <?php if (($_SESSION['user_role'] ?? '') === 'Docente'): ?>
-                        <a class="nav-link active" href="<?= e(base_url('/docente/dashboard')) ?>">Mis Cursos</a>
-                    <?php else: ?>
-                        <a class="nav-link active" href="<?= e(base_url('/dashboard')) ?>">Dashboard</a>
-                        <div class="sidebar-section-title">INFORMACION DE ESTUDIANTES</div>
-                        <a class="nav-link" href="<?= e(base_url('/estudiantes')) ?>">Estudiantes</a>
-                    <?php endif; ?>
-                    <?php if (($_SESSION['user_role'] ?? '') === 'Administrador'): ?>
-                        <div class="sidebar-section-title">ACADEMICO</div>
-                        <a class="nav-link" href="<?= e(base_url('/cursos')) ?>">Cursos</a>
-                        <a class="nav-link" href="<?= e(base_url('/materias')) ?>">Materias</a>
-                        <a class="nav-link" href="<?= e(base_url('/cursos-materias')) ?>">Materias por Curso</a>
-                        <a class="nav-link" href="<?= e(base_url('/docentes-asignaciones')) ?>">Asignar Docentes</a>
-                        <div class="sidebar-section-title">ADMINISTRACION</div>
-                        <a class="nav-link" href="<?= e(base_url('/usuarios')) ?>">Usuarios</a>
-                    <?php endif; ?>
-                    <div class="sidebar-section-title">SISTEMA</div>
-                    <a class="nav-link" href="<?= e(base_url('/logout')) ?>">Cerrar sesion</a>
-                </nav>
-                <div class="sidebar-user">Usuario: <?= e($_SESSION['user_name'] ?? '') ?></div>
-            </aside>
+            <?= view_partial('partials/sidebar', ['sections' => $sections, 'user_name' => $user_name]) ?>
+
             <main class="col-md-9 col-lg-10 main-content">
                 <?= $content ?>
             </main>
         </div>
     </div>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:10px;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Cerrar sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Realmente desea cerrar sesión?
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <a href="<?= e(base_url('/logout')) ?>" class="btn btn-primary">Confirmar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="<?= e(base_url('/assets/js/bootstrap.bundle.min.js')) ?>"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var titles = document.querySelectorAll('#sidebarMenu .sidebar-section-title[data-accordion="toggle"]');
+        titles.forEach(function(title) {
+            var group = document.getElementById('group-' + title.dataset.target);
+            if (!group || !group.classList.contains('sidebar-group-list')) return;
+
+            title.addEventListener('click', function() {
+                var isOpen = group.classList.contains('sidebar-group-open');
+
+                // Cerrar todos los grupos
+                document.querySelectorAll('#sidebarMenu .sidebar-group-list').forEach(function(ul) {
+                    ul.classList.remove('sidebar-group-open');
+                });
+                document.querySelectorAll('#sidebarMenu .sidebar-section-title[data-accordion="toggle"]').forEach(function(t) {
+                    t.classList.add('collapsed');
+                });
+
+                // Abrir solo el clickeado si estaba cerrado
+                if (!isOpen) {
+                    group.classList.add('sidebar-group-open');
+                    title.classList.remove('collapsed');
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>

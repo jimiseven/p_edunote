@@ -45,15 +45,12 @@
                             </span>
                         </td>
                         <td class="text-end">
-                            <a href="#" class="btn btn-sm btn-primary disabled" aria-disabled="true">Cargar Notas</a>
+                            <a href="<?= e(base_url('/docente/notas?asignacion=' . $course['id_asignacion'])) ?>"
+                               class="btn btn-sm btn-primary">Cargar Notas</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
-</div>
-
-<div class="alert alert-info mt-3 mb-0">
-    La opcion <strong>Cargar Notas</strong> se habilitara en el siguiente modulo.
 </div>
