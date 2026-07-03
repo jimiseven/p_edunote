@@ -20,6 +20,8 @@ class DashboardController extends Controller
         $this->view('dashboard/index', [
             'title' => 'Panel Principal',
             'stats' => Dashboard::stats(),
+            'statsNivel' => Dashboard::statsByLevel(),
+            'usersByRole' => Dashboard::usersByRole(),
         ]);
     }
 
