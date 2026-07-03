@@ -14,8 +14,19 @@
                 <div class="sidebar-brand"><span class="logo-icon">E</span><span>EDUFILE</span></div>
                 <nav class="px-3">
                     <div class="sidebar-section-title">PANEL</div>
-                    <a class="nav-link active" href="<?= e(base_url('/dashboard')) ?>">Dashboard</a>
+                    <?php if (($_SESSION['user_role'] ?? '') === 'Docente'): ?>
+                        <a class="nav-link active" href="<?= e(base_url('/docente/dashboard')) ?>">Mis Cursos</a>
+                    <?php else: ?>
+                        <a class="nav-link active" href="<?= e(base_url('/dashboard')) ?>">Dashboard</a>
+                        <div class="sidebar-section-title">INFORMACION DE ESTUDIANTES</div>
+                        <a class="nav-link" href="<?= e(base_url('/estudiantes')) ?>">Estudiantes</a>
+                    <?php endif; ?>
                     <?php if (($_SESSION['user_role'] ?? '') === 'Administrador'): ?>
+                        <div class="sidebar-section-title">ACADEMICO</div>
+                        <a class="nav-link" href="<?= e(base_url('/cursos')) ?>">Cursos</a>
+                        <a class="nav-link" href="<?= e(base_url('/materias')) ?>">Materias</a>
+                        <a class="nav-link" href="<?= e(base_url('/cursos-materias')) ?>">Materias por Curso</a>
+                        <a class="nav-link" href="<?= e(base_url('/docentes-asignaciones')) ?>">Asignar Docentes</a>
                         <div class="sidebar-section-title">ADMINISTRACION</div>
                         <a class="nav-link" href="<?= e(base_url('/usuarios')) ?>">Usuarios</a>
                     <?php endif; ?>

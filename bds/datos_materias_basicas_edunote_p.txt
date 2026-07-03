@@ -1,0 +1,17 @@
+-- Materias base para edunote_p
+-- Ejecutar despues de estructura y datos iniciales.
+
+USE `edunote_p`;
+
+INSERT INTO materias (nombre, abreviatura, descripcion, es_submateria, es_extra, estado) VALUES
+('Comunicacion y Lenguajes', 'LEN', 'Area de lenguaje y comunicacion', 0, 0, 1),
+('Matematica', 'MAT', 'Area de matematica', 0, 0, 1),
+('Ciencias Naturales', 'CN', 'Area de ciencias naturales', 0, 0, 1),
+('Ciencias Sociales', 'CS', 'Area de ciencias sociales', 0, 0, 1),
+('Educacion Fisica y Deportes', 'EFD', 'Area de educacion fisica', 0, 0, 1),
+('Artes Plasticas y Visuales', 'APV', 'Area artistica', 0, 0, 1),
+('Educacion Musical', 'MUS', 'Area musical', 0, 0, 1),
+('Valores, Espiritualidad y Religiones', 'VER', 'Area de valores', 0, 0, 1),
+('Tecnica Tecnologica', 'TT', 'Area tecnica tecnologica', 0, 0, 1),
+('Ingles', 'ING', 'Idioma extranjero', 0, 0, 1)
+ON DUPLICATE KEY UPDATE estado = VALUES(estado);

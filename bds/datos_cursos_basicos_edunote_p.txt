@@ -1,0 +1,35 @@
+-- Cursos base para edunote_p
+-- Ejecutar despues de estructura y datos iniciales.
+
+USE `edunote_p`;
+
+INSERT INTO cursos (nivel, grado, paralelo, turno, estado) VALUES
+('Inicial', 1, 'A', 'manana', 1),
+('Inicial', 1, 'B', 'manana', 1),
+('Inicial', 2, 'A', 'manana', 1),
+('Inicial', 2, 'B', 'manana', 1),
+('Primaria', 1, 'A', 'manana', 1),
+('Primaria', 1, 'B', 'manana', 1),
+('Primaria', 2, 'A', 'manana', 1),
+('Primaria', 2, 'B', 'manana', 1),
+('Primaria', 3, 'A', 'manana', 1),
+('Primaria', 3, 'B', 'manana', 1),
+('Primaria', 4, 'A', 'manana', 1),
+('Primaria', 4, 'B', 'manana', 1),
+('Primaria', 5, 'A', 'manana', 1),
+('Primaria', 5, 'B', 'manana', 1),
+('Primaria', 6, 'A', 'manana', 1),
+('Primaria', 6, 'B', 'manana', 1),
+('Secundaria', 1, 'A', 'manana', 1),
+('Secundaria', 1, 'B', 'manana', 1),
+('Secundaria', 2, 'A', 'manana', 1),
+('Secundaria', 2, 'B', 'manana', 1),
+('Secundaria', 3, 'A', 'manana', 1),
+('Secundaria', 3, 'B', 'manana', 1),
+('Secundaria', 4, 'A', 'manana', 1),
+('Secundaria', 4, 'B', 'manana', 1),
+('Secundaria', 5, 'A', 'manana', 1),
+('Secundaria', 5, 'B', 'manana', 1),
+('Secundaria', 6, 'A', 'manana', 1),
+('Secundaria', 6, 'B', 'manana', 1)
+ON DUPLICATE KEY UPDATE estado = VALUES(estado), turno = VALUES(turno);

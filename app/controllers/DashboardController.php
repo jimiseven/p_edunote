@@ -13,6 +13,10 @@ class DashboardController extends Controller
     {
         require_auth();
 
+        if (($_SESSION['user_role'] ?? '') === 'Docente') {
+            $this->redirect('/docente/dashboard');
+        }
+
         $this->view('dashboard/index', [
             'title' => 'Panel Principal',
             'stats' => Dashboard::stats(),
