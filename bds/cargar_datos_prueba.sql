@@ -1,0 +1,22 @@
+-- =============================================================
+-- DATOS DE PRUEBA PARA p_edunote
+-- Generado automaticamente
+-- =============================================================
+-- Este script INSERTA datos. Si quieres empezar limpio, ejecuta
+-- primero las sentencias DELETE mas abajo.
+-- =============================================================
+
+-- Descomentar para limpiar datos existentes (orden inverso FK):
+-- DELETE FROM calificaciones;
+-- DELETE FROM estudiante_responsable;
+-- DELETE FROM estudiante_abandono;
+-- DELETE FROM estudiante_actividad_laboral;
+-- DELETE FROM estudiante_idioma_cultura;
+-- DELETE FROM estudiante_transporte;
+-- DELETE FROM estudiante_servicios;
+-- DELETE FROM estudiante_dificultades;
+-- DELETE FROM estudiante_salud;
+-- DELETE FROM estudiante_direccion;
+-- DELETE FROM responsables;
+-- DELETE FROM matriculas;
+-- DELETE FROM estudiantes WHERE id_estudiante > 13;

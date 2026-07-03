@@ -100,6 +100,7 @@ class Student
     public static function find(int $id): ?array
     {
         $sql = "SELECT e.*, m.id_curso, m.id_matricula,
+                       c.nivel, c.grado, c.paralelo,
                        r.id_responsable, r.nombres AS resp_nombres, r.apellido_paterno AS resp_apellido_paterno,
                        r.apellido_materno AS resp_apellido_materno, r.ci AS resp_ci,
                        r.fecha_nacimiento AS resp_fecha_nacimiento, r.grado_instruccion AS resp_grado_instruccion,
@@ -109,6 +110,7 @@ class Student
                        er.autorizado_recoger AS resp_autorizado_recoger
                 FROM estudiantes e
                 LEFT JOIN matriculas m ON m.id_estudiante = e.id_estudiante AND m.estado = 'activo' AND m.deleted_at IS NULL
+                LEFT JOIN cursos c ON c.id_curso = m.id_curso
                 LEFT JOIN estudiante_responsable er ON er.id_estudiante = e.id_estudiante AND er.es_principal = 1
                 LEFT JOIN responsables r ON r.id_responsable = er.id_responsable
                 WHERE e.id_estudiante = ? AND e.deleted_at IS NULL
@@ -118,7 +120,44 @@ class Student
         $stmt->execute([$id]);
         $student = $stmt->fetch();
 
-        return $student ?: null;
+        if (!$student) {
+            return null;
+        }
+
+        // Fetch secondary info
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_direccion WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['direccion'] = $stmt->fetch() ?: null;
+
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_salud WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['salud'] = $stmt->fetch() ?: null;
+
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_idioma_cultura WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['idioma'] = $stmt->fetch() ?: null;
+
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_transporte WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['transporte'] = $stmt->fetch() ?: null;
+
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_servicios WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['servicios'] = $stmt->fetch() ?: null;
+
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_actividad_laboral WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['actividad_laboral'] = $stmt->fetch() ?: null;
+
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_dificultades WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['dificultades'] = $stmt->fetch() ?: null;
+
+        $stmt = Database::connection()->prepare("SELECT * FROM estudiante_abandono WHERE id_estudiante = ?");
+        $stmt->execute([$id]);
+        $student['abandono'] = $stmt->fetch() ?: null;
+
+        return $student;
     }
 
     public static function update(int $id, array $data): void

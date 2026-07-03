@@ -3,9 +3,14 @@
         &larr; Atras
     </a>
     <h2 class="main-title mb-0">Boletin: <?= e($course['nivel'] . ' ' . $course['grado'] . '° ' . $course['paralelo']) ?></h2>
-    <button onclick="window.print()" class="btn btn-primary">
-        <i class="bi bi-printer"></i> Imprimir
-    </button>
+    <div class="d-flex gap-2">
+        <a href="<?= e(base_url('/boletin/pdf?id_curso=' . $course['id_curso'] . '&vista=' . $vista . '&trimestre=' . $trimestre)) ?>" class="btn btn-danger" target="_blank">
+            PDF
+        </a>
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="bi bi-printer"></i> Imprimir
+        </button>
+    </div>
 </div>
 
 <div class="d-flex gap-3 mb-3 no-print">

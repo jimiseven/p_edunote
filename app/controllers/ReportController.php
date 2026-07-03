@@ -102,4 +102,93 @@ class ReportController extends Controller
             'promediosTrim' => $promediosTrim,
         ]);
     }
+
+    public function pdf(): void
+    {
+        require_any_role(['Administrador', 'Secretaria', 'Director']);
+
+        $idCurso = (int) ($_GET['id_curso'] ?? 0);
+        if ($idCurso <= 0) exit('Curso no valido.');
+
+        $course = Report::courseInfo($idCurso);
+        if (!$course) exit('Curso no encontrado.');
+
+        $gestion = Report::activeGestion();
+        if (!$gestion) exit('No hay gestion activa.');
+
+        $vista = $_GET['vista'] ?? 'trimestral';
+        $trimestre = (int) ($_GET['trimestre'] ?? 1);
+        $gestionId = (int) $gestion['id_gestion'];
+
+        $subjects = Report::subjects($idCurso);
+        $students = Report::students($idCurso, $gestionId);
+        $grades = Report::gradesByCourse($idCurso, $gestionId);
+
+        // Same averages logic as boletin()
+        $materiasParaProm = [];
+        foreach ($subjects['todas'] as $m) {
+            if (!$m['es_extra'] && !$m['es_submateria']) {
+                $materiasParaProm[] = $m;
+            }
+        }
+        foreach ($subjects['grupos'] as $g) {
+            foreach ($g['hijas'] as $h) {
+                $materiasParaProm[] = $h;
+            }
+        }
+
+        $promedios = [];
+        $promediosTrim = [];
+        foreach ($students as $est) {
+            $idEst = (int) $est['id_estudiante'];
+            $total = 0; $cnt = 0;
+            foreach ($materiasParaProm as $mat) {
+                $suma = 0; $cntNotas = 0;
+                for ($t = 1; $t <= 3; $t++) {
+                    if (isset($grades[$idEst][$mat['id_materia']][$t])) { $suma += $grades[$idEst][$mat['id_materia']][$t]; $cntNotas++; }
+                }
+                if ($cntNotas > 0) { $total += $suma / $cntNotas; $cnt++; }
+            }
+            $promedios[$idEst] = $cnt > 0 ? number_format($total / $cnt, 2) : '-';
+
+            $totalTrim = 0; $cntTrim = 0;
+            foreach ($materiasParaProm as $mat) {
+                if (isset($grades[$idEst][$mat['id_materia']][$trimestre])) { $totalTrim += $grades[$idEst][$mat['id_materia']][$trimestre]; $cntTrim++; }
+            }
+            $promediosTrim[$idEst] = $cntTrim > 0 ? number_format($totalTrim / $cntTrim, 2) : '-';
+        }
+
+        // Render PDF HTML
+        extract([
+            'course' => $course,
+            'gestion' => $gestion,
+            'subjects' => $subjects,
+            'students' => $students,
+            'grades' => $grades,
+            'vista' => $vista,
+            'trimestre' => $trimestre,
+            'promedios' => $promedios,
+            'promediosTrim' => $promediosTrim,
+        ], EXTR_SKIP);
+
+        $viewFile = BASE_PATH . '/app/views/boletin/pdf.php';
+        if (!is_file($viewFile)) exit('Vista PDF no encontrada.');
+
+        ob_start();
+        require $viewFile;
+        $html = ob_get_clean();
+
+        // Generate PDF with Dompdf
+        $options = new \Dompdf\Dompdf();
+        $options->loadHtml($html);
+        $options->setPaper('letter', 'landscape');
+        $options->render();
+
+        $filename = 'Boletin_' . str_replace(' ', '_', $course['nivel'] . '_' . $course['grado'] . '_' . $course['paralelo'])
+            . ($vista === 'trimestral' ? '_T' . $trimestre : '_Anual')
+            . '.pdf';
+
+        $options->stream($filename, ['Attachment' => true]); // 'Attachment' => false for inline
+        exit;
+    }
 }

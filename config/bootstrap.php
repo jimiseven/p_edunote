@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 define('BASE_PATH', dirname(__DIR__));
 
+// Composer autoload (for dompdf)
+$composerAutoload = BASE_PATH . '/vendor/autoload.php';
+if (is_file($composerAutoload)) {
+    require $composerAutoload;
+}
+
 spl_autoload_register(function (string $class): void {
     $prefix = 'App\\';
     if (!str_starts_with($class, $prefix)) {

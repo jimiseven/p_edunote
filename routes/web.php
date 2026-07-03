@@ -51,6 +51,7 @@ $router->post('/cursos-materias/update', [CourseSubjectController::class, 'updat
 $router->post('/cursos-materias/status', [CourseSubjectController::class, 'status']);
 $router->get('/ver-curso', [CourseViewController::class, 'show']);
 $router->get('/boletin', [ReportController::class, 'boletin']);
+$router->get('/boletin/pdf', [ReportController::class, 'pdf']);
 $router->get('/reportes', [ReportBuilderController::class, 'index']);
 $router->get('/reportes/constructor', [ReportBuilderController::class, 'constructor']);
 $router->post('/reportes/constructor', [ReportBuilderController::class, 'constructor']);
