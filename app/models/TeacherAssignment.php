@@ -25,12 +25,17 @@ class TeacherAssignment
 
         $params = [];
         if (!empty($filters['nivel'])) {
-            $sql .= ' AND c.nivel = :nivel';
-            $params['nivel'] = $filters['nivel'];
+            $sql .= ' AND c.nivel = ?';
+            $params[] = $filters['nivel'];
         }
         if (!empty($filters['search'])) {
-            $sql .= " AND (p.nombres LIKE :search OR p.apellidos LIKE :search OR p.ci LIKE :search OR m.nombre LIKE :search OR m.abreviatura LIKE :search)";
-            $params['search'] = '%' . $filters['search'] . '%';
+            $sql .= " AND (p.nombres LIKE ? OR p.apellidos LIKE ? OR p.ci LIKE ? OR m.nombre LIKE ? OR m.abreviatura LIKE ?)";
+            $searchVal = '%' . $filters['search'] . '%';
+            $params[] = $searchVal;
+            $params[] = $searchVal;
+            $params[] = $searchVal;
+            $params[] = $searchVal;
+            $params[] = $searchVal;
         }
 
         $sql .= " ORDER BY FIELD(c.nivel, 'Inicial', 'Primaria', 'Secundaria'), c.grado, c.paralelo, m.nombre, p.apellidos";
