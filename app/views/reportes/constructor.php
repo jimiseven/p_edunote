@@ -227,7 +227,7 @@ function toggleColumn(el, key) {
     cb.checked = !cb.checked;
     if (cb.checked) {
         el.classList.remove('bg-white');
-        if (el.closest('#academicColsContainer') || el.closest('.card-header.bg-info')?.closest('.card')) {
+        if (el.closest('.card-header.bg-info')?.closest('.card')) {
             el.classList.add('bg-info', 'text-white');
         } else {
             el.classList.add('bg-primary', 'text-white');
@@ -242,27 +242,4 @@ function toggleColumn(el, key) {
         order.value = 999;
     }
 }
-
-document.addEventListener('click', function(e) {
-    const th = e.target.closest('.sortable');
-    if (!th) return;
-    const table = th.closest('table');
-    if (!table) return;
-    const tbody = table.querySelector('tbody');
-    if (!tbody) return;
-    const colIdx = [...th.parentElement.children].indexOf(th);
-    const isAsc = th.dataset.sort !== 'asc';
-    th.dataset.sort = isAsc ? 'asc' : 'desc';
-    th.querySelectorAll('.sort-icon').forEach(el => el.remove());
-    th.insertAdjacentHTML('beforeend', `<span class="sort-icon ms-1">${isAsc ? '▲' : '▼'}</span>`);
-    const rows = [...tbody.querySelectorAll('tr')];
-    rows.sort((a, b) => {
-        const va = (a.children[colIdx]?.textContent || '').trim();
-        const vb = (b.children[colIdx]?.textContent || '').trim();
-        const na = parseFloat(va), nb = parseFloat(vb);
-        if (!isNaN(na) && !isNaN(nb)) return isAsc ? na - nb : nb - na;
-        return isAsc ? va.localeCompare(vb) : vb.localeCompare(va);
-    });
-    rows.forEach(r => tbody.appendChild(r));
-});
 </script>

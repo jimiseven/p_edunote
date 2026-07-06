@@ -10,5 +10,6 @@
 <body class="login-body">
     <?= $content ?>
     <script src="<?= e(base_url('/assets/js/bootstrap.bundle.min.js')) ?>"></script>
+    <script defer src="<?= e(base_url('/assets/js/alpine.min.js')) ?>"></script>
 </body>
 </html>

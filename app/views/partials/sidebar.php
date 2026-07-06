@@ -1,9 +1,13 @@
-<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar p-0">
+<nav id="sidebarMenu" class="sidebar p-0" :class="{ collapsed: collapsed }">
     <div class="sidebar-wrapper">
         <!-- Header -->
         <div class="sidebar-brand">
             <span class="logo-icon">E</span>
-            <span>EDUFILE</span>
+            <span class="brand-text">EDUFILE</span>
+            <button class="sidebar-toggle-btn" @click="toggle()" title="Colapsar/Expandir sidebar">
+                <span x-cloak x-show="!collapsed">&times;</span>
+                <span x-cloak x-show="collapsed">&#9776;</span>
+            </button>
         </div>
 
         <!-- Menu -->
@@ -23,7 +27,7 @@
                                     <a class="nav-link <?= ($link['active'] ?? false) ? 'active' : '' ?>"
                                        href="<?= e(base_url($link['url'])) ?>">
                                         <span class="feather"><?= \App\Helpers\SidebarHelper::icon($link['icon'] ?? '') ?></span>
-                                        <?= e($link['label']) ?>
+                                        <span class="nav-label"><?= e($link['label']) ?></span>
                                     </a>
                                 </li>
                             <?php endforeach; ?>
@@ -36,18 +40,18 @@
         <!-- Footer -->
         <div class="sidebar-bottom">
             <!-- Theme Toggle -->
-            <div class="theme-toggle" id="themeToggle" title="Cambiar tema">
-                <span class="theme-toggle-icon" id="themeIcon">🌙</span>
-                <div class="theme-toggle-track" id="themeTrack">
+            <div class="theme-toggle" @click="toggleTheme()" title="Cambiar tema">
+                <span class="theme-toggle-icon" x-text="theme === 'dark' ? '☀️' : '🌙'"></span>
+                <div class="theme-toggle-track" :class="{ active: theme === 'dark' }">
                     <div class="theme-toggle-thumb"></div>
                 </div>
-                <span style="flex:1;">Modo Oscuro</span>
+                <span class="toggle-label" style="flex:1;">Modo Oscuro</span>
             </div>
 
             <?php if ($user_name): ?>
                 <div class="sidebar-user">
                     <span class="feather"><?= \App\Helpers\SidebarHelper::icon('user') ?></span>
-                    <?= e($user_name) ?>
+                    <span class="nav-label"><?= e($user_name) ?></span>
                 </div>
             <?php endif; ?>
             <div class="sidebar-logout">
@@ -55,7 +59,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
                             <span class="feather"><?= \App\Helpers\SidebarHelper::icon('log-out') ?></span>
-                            Cerrar Sesión
+                            <span class="nav-label">Cerrar Sesión</span>
                         </a>
                     </li>
                 </ul>

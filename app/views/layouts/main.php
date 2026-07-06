@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($title ?? config('name')) ?></title>
     <link rel="stylesheet" href="<?= e(base_url('/assets/css/bootstrap.min.css')) ?>">
     <link rel="stylesheet" href="<?= e(base_url('/assets/css/app.css')) ?>">
+    <script>
+    (function() {
+        const key = 'edunote-theme';
+        const stored = localStorage.getItem(key);
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (systemDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-bs-theme', theme);
+    })();
+    </script>
 </head>
 <body>
     <?php
@@ -13,14 +22,14 @@
         $sections = $sidebar['sections'];
         $user_name = $sidebar['user_name'];
     ?>
-    <div class="container-fluid">
-        <div class="row min-vh-100">
+    <div class="app-layout">
+        <div class="sidebar-scope" x-data="sidebarScope()" x-init="init()">
             <?= view_partial('partials/sidebar', ['sections' => $sections, 'user_name' => $user_name]) ?>
-
-            <main class="col-md-9 col-lg-10 main-content">
-                <?= $content ?>
-            </main>
         </div>
+
+        <main class="main-content">
+            <?= $content ?>
+        </main>
     </div>
 
     <!-- Logout Modal -->
@@ -44,44 +53,40 @@
 
     <script src="<?= e(base_url('/assets/js/bootstrap.bundle.min.js')) ?>"></script>
     <script>
-    // --- Theme System ---
-    (function() {
-        var key = 'edunote-theme';
-        var stored = localStorage.getItem(key);
+    function sidebarScope() {
+        const themeKey = 'edunote-theme';
+        const sidebarKey = 'edunote-sidebar';
 
-        // Apply stored theme or system preference
-        if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
-        } else {
-            document.documentElement.setAttribute('data-bs-theme', 'light');
-        }
+        return {
+            theme: document.documentElement.getAttribute('data-bs-theme') || 'light',
+            collapsed: localStorage.getItem(sidebarKey) === 'true',
 
-        function syncToggleUI() {
-            var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            var track = document.getElementById('themeTrack');
-            var icon = document.getElementById('themeIcon');
-            if (track) track.classList.toggle('active', isDark);
-            if (icon) icon.textContent = isDark ? '☀️' : '🌙';
-        }
+            init() {
+                // Asegurar que el body/html reflejen el estado inicial del sidebar
+                if (this.collapsed) {
+                    document.documentElement.classList.add('sidebar-collapsed');
+                } else {
+                    document.documentElement.classList.remove('sidebar-collapsed');
+                }
+            },
 
-        document.addEventListener('DOMContentLoaded', function() {
-            syncToggleUI();
+            toggleTheme() {
+                this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-bs-theme', this.theme);
+                localStorage.setItem(themeKey, this.theme);
+            },
 
-            var toggle = document.getElementById('themeToggle');
-            if (toggle) {
-                toggle.addEventListener('click', function() {
-                    var html = document.documentElement;
-                    var isDark = html.getAttribute('data-bs-theme') === 'dark';
-                    var next = isDark ? 'light' : 'dark';
-                    html.setAttribute('data-bs-theme', next);
-                    localStorage.setItem(key, next);
-                    syncToggleUI();
-                });
+            toggle() {
+                this.collapsed = !this.collapsed;
+                document.documentElement.classList.toggle('sidebar-collapsed', this.collapsed);
+                localStorage.setItem(sidebarKey, this.collapsed);
             }
-        });
-    })();
-
-    // Sidebar accordion
+        };
+    }
+    </script>
+    <script defer src="<?= e(base_url('/assets/js/alpine.min.js')) ?>"></script>
+    <script>
+    // Sidebar accordion (vanilla, lightweight)
     document.addEventListener('DOMContentLoaded', function() {
         var titles = document.querySelectorAll('#sidebarMenu .sidebar-section-title[data-accordion="toggle"]');
         titles.forEach(function(title) {
@@ -91,7 +96,6 @@
             title.addEventListener('click', function() {
                 var isOpen = group.classList.contains('sidebar-group-open');
 
-                // Cerrar todos los grupos
                 document.querySelectorAll('#sidebarMenu .sidebar-group-list').forEach(function(ul) {
                     ul.classList.remove('sidebar-group-open');
                 });
@@ -99,7 +103,6 @@
                     t.classList.add('collapsed');
                 });
 
-                // Abrir solo el clickeado si estaba cerrado
                 if (!isOpen) {
                     group.classList.add('sidebar-group-open');
                     title.classList.remove('collapsed');
