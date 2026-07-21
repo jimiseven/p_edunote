@@ -17,7 +17,19 @@ spl_autoload_register(function (string $class): void {
     }
 
     $relativeClass = substr($class, strlen($prefix));
-    $file = BASE_PATH . '/app/' . str_replace('\\', '/', $relativeClass) . '.php';
+    $path = str_replace('\\', '/', $relativeClass);
+    $file = BASE_PATH . '/app/' . $path . '.php';
+
+    if (is_file($file)) {
+        require $file;
+        return;
+    }
+
+    // Linux (cPanel) fallback: lowercase first letter of first segment
+    // Handles case where namespace is PascalCase but directories are lowercase
+    $parts = explode('/', $path, 2);
+    $parts[0] = lcfirst($parts[0]);
+    $file = BASE_PATH . '/app/' . implode('/', $parts) . '.php';
 
     if (is_file($file)) {
         require $file;

@@ -1,0 +1,64 @@
+CAMBIOS REALIZADOS PARA DESPLEGAR EduNote P EN cPanel
+=====================================================
+
+1. config/database.php
+---------------------
+- Host: localhost
+- Database: edunote_p (o el nombre que crees en cPanel)
+- Usuario: root -> cPanel asigna uno como "cpaneluser_bduser"
+- Password: '' -> la que definas en cPanel MySQL
+
+2. config/app.php
+-----------------
+Se reemplazó la detección manual de base_url (que comparaba SERVER_NAME
+con localhost/127.0.0.1) por una detección dinámica desde SCRIPT_NAME.
+
+El problema: En local usaba '/p_edunote/public' y en remoto devolvía ''
+pero si el proyecto no está en la raíz exacta del document root, las
+rutas quedaban mal.
+
+Solución: toma dirname($_SERVER['SCRIPT_NAME']) para calcular la ruta
+base automáticamente:
+- Local XAMPP: SCRIPT_NAME = /p_edunote/public/index.php -> /p_edunote/public
+- cPanel con document root en public/: SCRIPT_NAME = /index.php -> '' (vacio)
+- cPanel sin cambiar document root: SCRIPT_NAME = /public/index.php -> /public
+
+3. config/bootstrap.php
+-----------------------
+Se modificó el autoloader PSR-4 personalizado.
+
+El problema: En Windows (XAMPP) las rutas no diferencian mayúsculas/
+minúsculas, pero en Linux (cPanel) sí. Las carpetas del proyecto están
+en minúscula (controllers/, models/, helpers/) pero los namespaces usan
+PascalCase (App\Controllers, App\Models, App\Helpers). En Windows
+funcionaba igual, en Linux daba error 500 porque no encontraba las clases.
+
+Solución: Se agregó un fallback en el autoloader que si no encuentra
+el archivo con la ruta exacta (PascalCase), convierte la primera letra
+del primer segmento a minúscula (lcfirst) y vuelve a intentar.
+
+4. public/index.php
+-------------------
+Se agregaron temporalmente 3 líneas al inicio para mostrar errores de PHP
+en pantalla (display_errors=1). Útil para depurar el error 500. Una vez
+que todo funcione, se pueden eliminar o comentar.
+
+RUTA ALTERNA (más limpia recomendada)
+======================================
+Si prefieres no depender del fix en bootstrap.php, la solución correcta
+es renombrar las carpetas del servidor para que coincidan con los namespaces:
+
+- app/controllers/  -> app/Controllers/
+- app/models/       -> app/Models/
+- app/helpers/      -> app/Helpers/
+- app/middlewares/  -> app/Middlewares/ (si se usa)
+
+En Windows no puedes tener Controllers/ y controllers/ a la vez, así que
+esto se hace directo en el servidor vía File Manager de cPanel.
+
+RESUMEN (archivos modificados)
+===============================
+- config/database.php     - Credenciales de BD
+- config/app.php          - base_url dinámico
+- config/bootstrap.php    - Autoloader con fallback case-sensitive
+- public/index.php        - Display errors (temporal)
