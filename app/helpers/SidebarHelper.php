@@ -173,10 +173,9 @@ class SidebarHelper
     /**
      * Determine if a link is active.
      *
-     * Uses exact route matching to avoid marking parent links as active when
-     * the user is on a child page (e.g. /dashboard should not be active on
-     * /dashboard/primaria). This is the correct equivalent of p_edufile's
-     * active() function for a route-based MVC app.
+     * A link is active if the current URL starts with the link URL.
+     * This allows parent links to be active when on child pages
+     * (e.g. /usuarios is active on /usuarios/create).
      */
     private static function isActive(string $url, string $current, ?string $force = null): bool
     {
@@ -185,7 +184,20 @@ class SidebarHelper
             return true;
         }
 
-        return rtrim($url, '/') === rtrim($current, '/');
+        $url = rtrim($url, '/');
+        $current = rtrim($current, '/');
+
+        // Exact match
+        if ($url === $current) {
+            return true;
+        }
+
+        // Parent match: current URL starts with link URL (and has more path after)
+        if (str_starts_with($current, $url . '/')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -3,18 +3,20 @@
         <h1 class="main-title mb-1">Gestion de Cursos</h1>
         <p class="text-muted mb-0">Administracion de niveles, grados, paralelos y turnos.</p>
     </div>
-    <a href="<?= e(base_url('/cursos/create')) ?>" class="btn btn-success">Nuevo Curso</a>
+    <a href="<?= e(base_url('/cursos/create')) ?>" class="btn btn-success">
+        <i class="feather-plus me-1"></i>Nuevo Curso
+    </a>
 </div>
 
 <?php if (!empty($success)): ?>
-    <div class="alert alert-success"><?= e($success) ?></div>
+    <div class="alert alert-success alert-dismissible fade show"><?= e($success) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 <?php endif; ?>
 
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger"><?= e($error) ?></div>
+    <div class="alert alert-danger alert-dismissible fade show"><?= e($error) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 <?php endif; ?>
 
-<div class="card shadow-sm mb-3">
+<div class="card shadow-sm mb-3" style="border: 0; border-radius: 12px;">
     <div class="card-body">
         <form method="GET" action="<?= e(base_url('/cursos')) ?>" class="row g-2">
             <div class="col-md-10">
@@ -27,10 +29,10 @@
     </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="table-responsive">
+<div class="card shadow-sm" style="border: 0; border-radius: 12px; overflow: hidden;">
+    <div class="table-scrollable-wrapper">
         <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>Nivel</th>
                     <th>Grado</th>

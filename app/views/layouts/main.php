@@ -109,6 +109,27 @@
                 }
             });
         });
+
+        // Dynamic tab colors based on gradient
+        var tabs = document.querySelectorAll('.card-header .nav-pills .nav-link[data-default-bg]');
+        function updateTabColors() {
+            tabs.forEach(function(t) {
+                var gradient = t.getAttribute('data-default-bg');
+                if (t.classList.contains('active')) {
+                    t.style.background = gradient;
+                    t.style.color = '#fff';
+                    t.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+                } else {
+                    t.style.background = '#fff';
+                    t.style.color = '#475569';
+                    t.style.boxShadow = '0 1px 2px rgba(0,0,0,0.04)';
+                }
+            });
+        }
+        tabs.forEach(function(tab) {
+            tab.addEventListener('shown.bs.tab', updateTabColors);
+        });
+        updateTabColors();
     });
     </script>
 </body>
